@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Note({ route, note }) {
+import theme from '../theme';
+
+export default function NoteBox({ route, note }) {
 
     return (
         <View style={styles.container}>
@@ -17,18 +19,18 @@ const styles = StyleSheet.create({
         height: 172,
         padding: 16,
         borderRadius: 16,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: theme.containerBg,
         gap: 16,
     },
 
     title: {
-        color: '#2995D9',
+        color: theme.lowerOpacityText,
         fontSize: 16,
         fontWeight: 'bold',
     },
 
     text: {
         fontSize: 14,
-        color: '#F2F2F2'
+        color: theme.secondaryColor
     }
 })

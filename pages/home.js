@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
-import Note from '../components/note';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
+import NoteBox from '../components/note_box';
+
+import theme from '../theme';
 
 const notesData = [
     { id: '1', title: 'Note 1', text: 'This is a short note.' },
@@ -25,6 +27,20 @@ export default function Home({ navigation }) {
     return (
         <View style={styles.container}>
 
+            {/* Top Navigation */}
+            <View style={styles.topNavContainer}>
+                <TouchableOpacity>
+                    <Text style={styles.buttonText}>\\\</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                    <Image
+                        style={styles.tinyLogo}
+                        source={require('../assets/settings.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+
             {/* Notes */}
             <FlatList
                 data={notesData}
@@ -33,9 +49,9 @@ export default function Home({ navigation }) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.noteItem}
-                        onPress={() => navigation.navigate('Note', { note: item })}
+                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text })}
                     >
-                        <Note note={item} />
+                        <NoteBox note={item} />
                     </TouchableOpacity>
                 )}
                 contentContainerStyle={styles.notes}
@@ -47,20 +63,34 @@ export default function Home({ navigation }) {
                 <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>
 
-
+            <StatusBar style="light" hidden={false} />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: '#000000',
         paddingTop: 16,
     },
 
+    topNavContainer: {
+        width: '100%',
+        height: 72,
+
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: 'black',
+        left: 0,
+
+    },
+
     notes: {
         paddingHorizontal: 16,
+        paddingBottom: 72,
         gap: 16,
     },
 
@@ -72,18 +102,23 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         position: 'absolute',
-        right: 32,
-        bottom: 32,
+        right: 16,
+        bottom: 80,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#1E82D9',
+        backgroundColor: theme.primaryColor,
         borderRadius: 50,
     },
 
     buttonText: {
-        color: '#F2F2F0',
+        color: theme.secondaryColor,
         fontSize: 32,
         fontWeight: 'bold',
+    },
+
+    tinyLogo: {
+        width: 24,
+        height: 24,
     },
 });
 
