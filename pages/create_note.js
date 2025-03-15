@@ -5,7 +5,8 @@ import { Menu, Provider, Divider } from 'react-native-paper';
 import theme from '../theme';
 
 export default function CreateNote({ navigation, route }) {
-    const { id } = route.params?.id || 0;
+    const { id } = route.params;
+    const { saveNoteByID } = route.params;
 
     const [visible, setVisible] = useState(false);
 
@@ -36,13 +37,15 @@ export default function CreateNote({ navigation, route }) {
         const year = now.getFullYear();
         setDate(`${day}/${month}/${year}`);
 
+        saveNoteByID(id, title, text)
         navigation.navigate('Home');
     }
 
     const onSaveInput = () => {
         Keyboard.dismiss();
         setEditing(false);
-        setVisible(false)
+        setVisible(false);
+        saveNote()
     }
 
     return (

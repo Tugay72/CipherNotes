@@ -24,6 +24,20 @@ export default function Home({ navigation }) {
         navigation.navigate('CreateNote')
     };
 
+    const saveNoteByID = (id, title, text) => {
+        console.log(id, title, text)
+        // Find the note by id
+        const note = notesData.find(note => note.id === id);
+
+        if (note) {
+            // Update the note's title and text
+            note.title = title;
+            note.text = text;
+        } else {
+            console.log("Note not found!");
+        }
+    };
+
     return (
         <View style={styles.container}>
 
@@ -49,7 +63,7 @@ export default function Home({ navigation }) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.noteItem}
-                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text })}
+                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, saveNoteByID: saveNoteByID })}
                     >
                         <NoteBox note={item} />
                     </TouchableOpacity>
