@@ -1,8 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, FlatList } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 import theme from '../theme';
+
+const DATA = [
+    { id: "1", title: "H1" },
+    { id: "2", title: "H2" },
+    { id: "3", title: "H3" },
+    { id: "4", title: "H4" },
+    { id: "5", title: "B" },
+    { id: "6", title: "U" },
+    { id: "7", title: "I" },
+    { id: "8", icon: 'format-list-bulleted' },
+    { id: "9", icon: 'record-voice-over' },
+    { id: "10", icon: 'image' },
+    { id: "11", icon: 'brush' },
+    { id: "12", icon: 'document-scanner' },
+];
+
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -101,8 +118,12 @@ export default function CreateNote({ navigation, route }) {
                     />
 
                     <View style={styles.infoBox}>
-                        <Text style={{ color: '#2a2a2a' }}>Last edit: {time + '  ' + date}</Text>
-                        <Text style={{ color: '#2a2a2a' }}>Characters: {text.length} / 3000</Text>
+                        <Text style={{ color: '#2a2a2a' }}>
+                            Last edit: {time + '  ' + date}
+                        </Text>
+                        <Text style={{ color: '#2a2a2a' }}>
+                            Characters: {text.length} / 3000
+                        </Text>
                     </View>
 
                     <TextInput /* Note text */
@@ -116,6 +137,35 @@ export default function CreateNote({ navigation, route }) {
                         style={styles.textInput}
                     />
                 </View>
+
+                {/* Bottom Navigation Bar */}
+                {editing ? (
+                    <View style={styles.bottomNavigationBar}>
+                        <FlatList
+                            data={DATA}
+                            horizontal
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                                <View style={styles.bottomNavBaritem}>
+                                    <TouchableOpacity>
+                                        {item.icon ? (
+                                            <Icon name={item.icon} size={24} color="#FFFFFF"></Icon>
+                                        ) : (
+                                            <Text style={styles.buttonText}>
+                                                {item.title}
+                                            </Text>
+                                        )}
+
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            showsHorizontalScrollIndicator={false} // Hides scroll bar
+                        />
+                    </View>
+                ) : (
+                    null
+                )}
+
                 <StatusBar style="light" hidden={false} />
             </View>
         </Provider>
@@ -147,6 +197,22 @@ const styles = StyleSheet.create({
         marginTop: 48,
         padding: 16,
         gap: 16
+    },
+
+    bottomNavigationBar: {
+        flex: 1,
+        position: "absolute",
+        bottom: 8,
+        backgroundColor: 'none',
+    },
+
+    bottomNavBaritem: {
+        padding: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: "#0f0f0f",
+        width: 64,
+        height: 64,
     },
 
     infoBox: {

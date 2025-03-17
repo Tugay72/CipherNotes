@@ -21,7 +21,7 @@ const notesData = [
 
 export default function Home({ navigation }) {
     const onCreateNote = () => {
-        navigation.navigate('CreateNote')
+        navigation.navigate('CreateNote', { id: 13, title: '', text: '', saveNoteByID: saveNoteByID })
     };
 
     const saveNoteByID = (id, title, text) => {
@@ -34,7 +34,14 @@ export default function Home({ navigation }) {
             note.title = title;
             note.text = text;
         } else {
-            console.log("Note not found!");
+            // Create a new note
+            let newId = (parseInt(notesData[notesData.length - 1].id) + 1).toString(); // Generate a new unique id
+            notesData.push({
+                id: newId,
+                title: title,
+                text: text
+            });
+
         }
     };
 
@@ -47,7 +54,7 @@ export default function Home({ navigation }) {
                     <Text style={styles.buttonText}>\\\</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
                     <Image
                         style={styles.tinyLogo}
                         source={require('../assets/settings.png')}
