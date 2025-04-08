@@ -2,47 +2,30 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, FlatList } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import * as ImagePicker from 'expo-image-picker';
 import theme from '../theme';
-
-const DATA = [
-    { id: "1", title: "H1" },
-    { id: "2", title: "H2" },
-    { id: "3", title: "H3" },
-    { id: "4", title: "H4" },
-    { id: "5", title: "B" },
-    { id: "6", title: "U" },
-    { id: "7", title: "I" },
-    { id: "8", icon: 'format-list-bulleted' },
-    { id: "9", icon: 'record-voice-over' },
-    { id: "10", icon: 'image' },
-    { id: "11", icon: 'brush' },
-    { id: "12", icon: 'document-scanner' },
-];
-
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
     const { saveNoteByID } = route.params;
 
     const [visible, setVisible] = useState(false);
-
-    // Toggle menu visibility
-    const openMenu = () => setVisible(true);
-    const closeMenu = () => setVisible(false);
-
     const [title, setTitle] = useState(route.params?.title || '');
-    const [text, setText] = useState(route.params?.text || '');
+    const [contentBlocks, setContentBlocks] = useState([
+        { type: 'text', content: route.params?.text || '' }
+    ]);
     const [time, setTime] = useState("");
     const [date, setDate] = useState("");
     const [editing, setEditing] = useState(false);
 
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+
     const goBack = () => {
         navigation.navigate('Home');
-    }
+    };
 
     const saveNote = () => {
-        //Save last edit time
         const now = new Date();
         const hours = now.getHours().toString().padStart(2, '0');
         const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -54,16 +37,61 @@ export default function CreateNote({ navigation, route }) {
         const year = now.getFullYear();
         setDate(`${day}/${month}/${year}`);
 
-        saveNoteByID(id, title, text)
+        // Merge all text blocks into one for saving
+        const finalText = contentBlocks
+            .filter(b => b.type === 'text')
+            .map(b => b.content)
+            .join('\n');
+
+        saveNoteByID(id, title, finalText);
         navigation.navigate('Home');
-    }
+    };
 
     const onSaveInput = () => {
         Keyboard.dismiss();
         setEditing(false);
         setVisible(false);
-        saveNote()
-    }
+        saveNote();
+    };
+
+    const addImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Permission to access camera roll is required!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets?.length > 0) {
+            const newUri = result.assets[0].uri;
+            const newBlocks = [...contentBlocks];
+
+            newBlocks.push({ type: 'image', content: newUri });
+            newBlocks.push({ type: 'text', content: '' });
+
+            setContentBlocks(newBlocks);
+        }
+    };
+
+    const BNB_DATA = [
+        { id: "1", title: "H1", onPress: () => console.log("Pressed H1") },
+        { id: "2", title: "H2", onPress: () => console.log("Pressed H2") },
+        { id: "3", title: "H3", onPress: () => console.log("Pressed H3") },
+        { id: "4", title: "H4", onPress: () => console.log("Pressed H4") },
+        { id: "5", title: "B", onPress: () => console.log("Pressed B") },
+        { id: "6", title: "U", onPress: () => console.log("Pressed U") },
+        { id: "7", title: "I", onPress: () => console.log("Pressed I") },
+        { id: "8", icon: 'format-list-bulleted', onPress: () => console.log("Pressed List Icon") },
+        { id: "9", icon: 'record-voice-over', onPress: () => console.log("Voice Recording Started") },
+        { id: "10", icon: 'image', onPress: addImage },
+        { id: "11", icon: 'brush', onPress: () => console.log("Open Drawing Canvas") },
+        { id: "12", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
+    ];
 
     return (
         <Provider>
@@ -80,7 +108,7 @@ export default function CreateNote({ navigation, route }) {
                             <Text style={styles.buttonText}>✔</Text>
                         </TouchableOpacity>
                     ) : (
-                        <TouchableOpacity onPress={() => setVisible(true)}>
+                        <TouchableOpacity onPress={openMenu}>
                             <Menu
                                 visible={visible}
                                 onDismiss={closeMenu}
@@ -92,7 +120,6 @@ export default function CreateNote({ navigation, route }) {
                                         />
                                     </TouchableOpacity>
                                 }
-
                             >
                                 <Menu.Item onPress={() => { console.log('Option 1 pressed'); closeMenu(); }} title="Add password" />
                                 <Divider />
@@ -104,8 +131,7 @@ export default function CreateNote({ navigation, route }) {
 
                 {/* Content */}
                 <View style={styles.content}>
-
-                    <TextInput /* Title */
+                    <TextInput
                         placeholder="Title"
                         placeholderTextColor='#3a3a3a'
                         value={title}
@@ -118,58 +144,83 @@ export default function CreateNote({ navigation, route }) {
                     />
 
                     <View style={styles.infoBox}>
+                        <Text style={{ color: '#2a2a2a' }}>Last edit: {time + '  ' + date}</Text>
                         <Text style={{ color: '#2a2a2a' }}>
-                            Last edit: {time + '  ' + date}
-                        </Text>
-                        <Text style={{ color: '#2a2a2a' }}>
-                            Characters: {text.length} / 3000
+                            Characters: {
+                                contentBlocks.filter(b => b.type === 'text')
+                                    .map(b => b.content.length).reduce((a, b) => a + b, 0)
+                            } / 3000
                         </Text>
                     </View>
 
-                    <TextInput /* Note text */
-                        placeholder="Start typing..."
-                        placeholderTextColor='#3a3a3a'
-                        value={text}
-                        maxLength={6000}
-                        onChangeText={setText}
-                        onFocus={() => setEditing(true)}
-                        onBlur={() => setEditing(false)}
-                        style={styles.textInput}
+                    <FlatList
+                        data={contentBlocks}
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({ item, index }) => {
+                            if (item.type === 'image') {
+                                return (
+                                    <Image
+                                        source={{ uri: item.content }}
+                                        style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
+                                        resizeMode="cover"
+                                    />
+                                );
+                            } else {
+                                return (
+                                    <TextInput
+                                        multiline
+                                        placeholder="Start typing..."
+                                        placeholderTextColor='#3a3a3a'
+                                        style={styles.textInput}
+                                        value={item.content}
+                                        onChangeText={(text) => {
+                                            const updatedBlocks = [...contentBlocks];
+                                            updatedBlocks[index].content = text;
+                                            setContentBlocks(updatedBlocks);
+                                        }}
+                                        onFocus={() => setEditing(true)}
+
+
+                                    />
+                                );
+                            }
+                        }}
+                        ListFooterComponent={<View style={{ height: 320 }} />}
+                        showsVerticalScrollIndicator={false}
                     />
                 </View>
 
                 {/* Bottom Navigation Bar */}
-                {editing ? (
-                    <View style={styles.bottomNavigationBar}>
-                        <FlatList
-                            data={DATA}
-                            horizontal
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <View style={styles.bottomNavBaritem}>
-                                    <TouchableOpacity>
-                                        {item.icon ? (
-                                            <Icon name={item.icon} size={24} color="#FFFFFF"></Icon>
-                                        ) : (
-                                            <Text style={styles.buttonText}>
-                                                {item.title}
-                                            </Text>
-                                        )}
 
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                            showsHorizontalScrollIndicator={false} // Hides scroll bar
-                        />
-                    </View>
-                ) : (
-                    null
-                )}
+                <View style={styles.bottomNavigationBar}>
+                    <FlatList
+                        data={BNB_DATA}
+                        horizontal
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <View style={styles.bottomNavBaritem}>
+                                <TouchableOpacity onPress={
+
+                                    item.onPress
+                                }>
+                                    {item.icon ? (
+                                        <Icon name={item.icon} size={24} color="#FFFFFF" />
+                                    ) : (
+                                        <Text style={styles.buttonText}>
+                                            {item.title}
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        showsHorizontalScrollIndicator={false}
+                    />
+                </View>
 
                 <StatusBar style="light" hidden={false} />
             </View>
         </Provider>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -178,12 +229,10 @@ const styles = StyleSheet.create({
         paddingTop: 40,
         flex: 1,
     },
-
     topNavContainer: {
         width: '100%',
         height: 64,
         flexDirection: 'row',
-        flexWrap: 'wrap',
         justifyContent: 'space-between',
         padding: 16,
         backgroundColor: 'black',
@@ -191,21 +240,17 @@ const styles = StyleSheet.create({
         top: 24,
         left: 0,
     },
-
     content: {
         flex: 1,
         marginTop: 48,
         padding: 16,
         gap: 16
     },
-
     bottomNavigationBar: {
         flex: 1,
         position: "absolute",
         bottom: 8,
-        backgroundColor: 'none',
     },
-
     bottomNavBaritem: {
         padding: 4,
         alignItems: 'center',
@@ -214,14 +259,11 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
     },
-
     infoBox: {
-        display: 'flex',
         flexDirection: 'row',
         gap: 16,
         marginBottom: 24,
     },
-
     titleInput: {
         width: '100%',
         color: theme.secondaryColor,
@@ -229,21 +271,20 @@ const styles = StyleSheet.create({
         padding: 0,
         margin: 0
     },
-
     textInput: {
         width: '100%',
+        height: '100%',
         color: theme.secondaryColor,
         fontSize: 16,
         padding: 0,
-        margin: 0,
-        left: 0
+        marginBottom: 10,
+        textAlign: 'left',
+        textAlignVertical: 'top'
     },
-
     buttonText: {
         color: theme.secondaryColor,
         fontSize: 24,
     },
-
     tinyLogo: {
         width: 24,
         height: 24,
