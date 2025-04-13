@@ -4,6 +4,7 @@ import { Menu, Provider, Divider } from 'react-native-paper';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from 'expo-image-picker';
 import theme from '../theme';
+import { saveNote } from '../noteStorage';
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -24,6 +25,15 @@ export default function CreateNote({ navigation, route }) {
     const goBack = () => {
         navigation.navigate('Home');
     };
+
+    const onBottomNavPress = (onPressFunction) => {
+        // Klavye kapanmasını engelle
+        if (Keyboard.isVisible()) {
+            return;
+        }
+        onPressFunction();
+    };
+
 
     const saveNote = () => {
         const now = new Date();
@@ -79,18 +89,10 @@ export default function CreateNote({ navigation, route }) {
     };
 
     const BNB_DATA = [
-        { id: "1", title: "H1", onPress: () => console.log("Pressed H1") },
-        { id: "2", title: "H2", onPress: () => console.log("Pressed H2") },
-        { id: "3", title: "H3", onPress: () => console.log("Pressed H3") },
-        { id: "4", title: "H4", onPress: () => console.log("Pressed H4") },
-        { id: "5", title: "B", onPress: () => console.log("Pressed B") },
-        { id: "6", title: "U", onPress: () => console.log("Pressed U") },
-        { id: "7", title: "I", onPress: () => console.log("Pressed I") },
-        { id: "8", icon: 'format-list-bulleted', onPress: () => console.log("Pressed List Icon") },
-        { id: "9", icon: 'record-voice-over', onPress: () => console.log("Voice Recording Started") },
-        { id: "10", icon: 'image', onPress: addImage },
-        { id: "11", icon: 'brush', onPress: () => console.log("Open Drawing Canvas") },
-        { id: "12", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
+        { id: "1", icon: 'record-voice-over', onPress: () => console.log("Voice Recording Started") },
+        { id: "2", icon: 'image', onPress: addImage },
+        { id: "3", icon: 'brush', onPress: () => console.log("Open Drawing Canvas") },
+        { id: "4", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
     ];
 
     return (
@@ -100,7 +102,7 @@ export default function CreateNote({ navigation, route }) {
                 {/* Top Navigation */}
                 <View style={styles.topNavContainer}>
                     <TouchableOpacity onPress={goBack}>
-                        <Text style={styles.buttonText}>☚</Text>
+                        <Text style={styles.buttonText}>←</Text>
                     </TouchableOpacity>
 
                     {editing ? (
@@ -199,10 +201,7 @@ export default function CreateNote({ navigation, route }) {
                         keyExtractor={(item) => item.id}
                         renderItem={({ item }) => (
                             <View style={styles.bottomNavBaritem}>
-                                <TouchableOpacity onPress={
-
-                                    item.onPress
-                                }>
+                                <TouchableOpacity onPress={() => onBottomNavPress(item.onPress)}>
                                     {item.icon ? (
                                         <Icon name={item.icon} size={24} color="#FFFFFF" />
                                     ) : (
@@ -215,6 +214,7 @@ export default function CreateNote({ navigation, route }) {
                         )}
                         showsHorizontalScrollIndicator={false}
                     />
+
                 </View>
 
                 <StatusBar style="light" hidden={false} />
