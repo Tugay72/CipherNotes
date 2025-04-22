@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, FlatList } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
+import Slider from '@react-native-community/slider';
+
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from 'expo-image-picker';
-import theme from '../theme';
+
+import themes from "../theme";
 import { saveNote } from '../noteStorage';
 
 export default function CreateNote({ navigation, route }) {
@@ -19,6 +22,19 @@ export default function CreateNote({ navigation, route }) {
     const [date, setDate] = useState("");
     const [editing, setEditing] = useState(false);
 
+    const [stylizeVisible, setStylizeVisible] = useState(false);
+    const [fontSize, setFontSize] = useState(16);
+    const [fontStyle, setFontStyle] = useState('normal');
+    const [fontColor, setFontColor] = useState('#')
+    const [bgImage, setBgImage] = useState(null);
+    const [bgColor, setBgColor] = useState('#000000');
+    const [selectedTheme, setSelectedTheme] = useState(null);
+
+    const applyTheme = (theme) => {
+        setBgColor(theme.primaryColor);
+        setFontColor(theme.secondaryColor)
+    };
+
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
@@ -27,7 +43,6 @@ export default function CreateNote({ navigation, route }) {
     };
 
     const onBottomNavPress = (onPressFunction) => {
-        // Klavye kapanmasını engelle
         if (Keyboard.isVisible()) {
             return;
         }
@@ -88,6 +103,28 @@ export default function CreateNote({ navigation, route }) {
         }
     };
 
+    const pickBackgroundImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Permission to access camera roll is required!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets?.length > 0) {
+            setBgImage(result.assets[0].uri);
+        }
+        else {
+            setBgColor('#f0f0f0')
+        }
+    };
+
+
     const BNB_DATA = [
         { id: "1", icon: 'record-voice-over', onPress: () => console.log("Voice Recording Started") },
         { id: "2", icon: 'image', onPress: addImage },
@@ -97,128 +134,225 @@ export default function CreateNote({ navigation, route }) {
 
     return (
         <Provider>
-            <View style={styles.container}>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={stylizeVisible}
+                onRequestClose={() => setStylizeVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Stylize Note</Text>
 
-                {/* Top Navigation */}
-                <View style={styles.topNavContainer}>
-                    <TouchableOpacity onPress={goBack}>
-                        <Text style={styles.buttonText}>←</Text>
-                    </TouchableOpacity>
+                        {/* Font Size */}
+                        <Text style={styles.modalLabel}>Font Size</Text>
+                        <View style={styles.optionRow}>
+                            <Text style={{ color: '#aaa', marginBottom: 8 }}>Font Size: {fontSize}</Text>
+                            <Slider
+                                style={{ width: '100%', height: 40 }}
+                                minimumValue={8}
+                                maximumValue={32}
+                                step={1}
+                                minimumTrackTintColor="#888"
+                                maximumTrackTintColor="#444"
+                                thumbTintColor="#ddd"
+                                value={fontSize}
+                                onValueChange={setFontSize}
+                            />
+                        </View>
 
-                    {editing ? (
-                        <TouchableOpacity onPress={onSaveInput}>
-                            <Text style={styles.buttonText}>✔</Text>
+                        {/* Background Color */}
+                        <Text style={styles.modalLabel}>Background</Text>
+                        <TouchableOpacity
+                            onPress={pickBackgroundImage}
+                            style={[styles.optionButton, { marginBottom: 12 }]}
+                        >
+                            <Text style={{ color: 'white' }}>Pick Background Image</Text>
                         </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity onPress={openMenu}>
-                            <Menu
-                                visible={visible}
-                                onDismiss={closeMenu}
-                                anchor={
-                                    <TouchableOpacity onPress={openMenu}>
-                                        <Image
-                                            style={styles.tinyLogo}
-                                            source={require('../assets/dots.png')}
-                                        />
-                                    </TouchableOpacity>
-                                }
-                            >
-                                <Menu.Item onPress={() => { console.log('Option 1 pressed'); closeMenu(); }} title="Add password" />
-                                <Divider />
-                                <Menu.Item onPress={() => { console.log('Option 4 pressed'); closeMenu(); }} title="Delete" />
-                            </Menu>
+
+                        <View style={styles.optionRow}>
+                            {['#000000', '#ffffff', '#003366', '#1a1a1a'].map(color => (
+                                <TouchableOpacity
+                                    key={color}
+                                    style={[
+                                        styles.colorBox,
+                                        { backgroundColor: color },
+                                        bgColor === color && !bgImage && styles.colorSelected
+                                    ]}
+                                    onPress={() => {
+                                        setBgColor(color);
+                                        setBgImage(null);
+                                    }}
+                                />
+                            ))}
+                        </View>
+
+                        {/* Theme Selection */}
+                        <Text style={styles.modalLabel}>Choose a Theme</Text>
+                        <View style={styles.optionRow}>
+                            {themes.map((theme) => (
+                                <TouchableOpacity
+                                    key={theme.name}
+                                    style={[styles.themeButton, selectedTheme === theme.name && styles.themeSelected]}
+                                    onPress={() => {
+                                        applyTheme(theme);
+                                        setSelectedTheme(theme.name);
+                                    }}
+                                >
+                                    <Text style={styles.themeText}>{theme.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+
+                        <TouchableOpacity
+                            style={styles.modalCloseButton}
+                            onPress={() => setStylizeVisible(false)}
+                        >
+                            <Text style={{ color: 'white' }}>Done</Text>
                         </TouchableOpacity>
-                    )}
+                    </View>
                 </View>
+            </Modal>
 
-                {/* Content */}
-                <View style={styles.content}>
-                    <TextInput
-                        placeholder="Title"
-                        placeholderTextColor='#3a3a3a'
-                        value={title}
-                        maxLength={60}
-                        numberOfLines={1}
-                        onChangeText={setTitle}
-                        onFocus={() => setEditing(true)}
-                        onBlur={() => setEditing(false)}
-                        style={styles.titleInput}
-                    />
 
-                    <View style={styles.infoBox}>
-                        <Text style={{ color: '#2a2a2a' }}>Last edit: {time + '  ' + date}</Text>
-                        <Text style={{ color: '#2a2a2a' }}>
-                            Characters: {
-                                contentBlocks.filter(b => b.type === 'text')
-                                    .map(b => b.content.length).reduce((a, b) => a + b, 0)
-                            } / 3000
-                        </Text>
+            <ImageBackground
+                source={bgImage ? { uri: bgImage } : null}
+                style={{ flex: 1 }}
+                resizeMode="cover"
+            >
+                <View style={[styles.container, { backgroundColor: bgImage ? 'transparent' : bgColor }]}>
+
+
+                    {/* Top Navigation */}
+                    <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
+                        <TouchableOpacity onPress={goBack}>
+                            <Text style={styles.buttonText}>←</Text>
+                        </TouchableOpacity>
+
+                        {editing ? (
+                            <TouchableOpacity onPress={onSaveInput}>
+                                <Text style={styles.buttonText}>✔</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity onPress={openMenu}>
+                                <Menu
+                                    visible={visible}
+                                    onDismiss={closeMenu}
+                                    anchor={
+                                        <TouchableOpacity onPress={openMenu}>
+                                            <Image
+                                                style={styles.tinyLogo}
+                                                source={require('../assets/dots.png')}
+                                            />
+                                        </TouchableOpacity>
+                                    }
+                                >
+                                    <Menu.Item onPress={() => { console.log('Option 1 pressed'); closeMenu(); }} title="Add password" />
+                                    <Menu.Item
+                                        onPress={() => {
+                                            closeMenu();
+                                            setStylizeVisible(true);
+                                        }}
+                                        title="Stylize"
+                                    />
+
+                                    <Divider />
+                                    <Menu.Item onPress={() => { console.log('Option 3 pressed'); closeMenu(); }} title="Delete" />
+                                </Menu>
+                            </TouchableOpacity>
+                        )}
                     </View>
 
-                    <FlatList
-                        data={contentBlocks}
-                        keyExtractor={(_, index) => index.toString()}
-                        renderItem={({ item, index }) => {
-                            if (item.type === 'image') {
-                                return (
-                                    <Image
-                                        source={{ uri: item.content }}
-                                        style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
-                                        resizeMode="cover"
-                                    />
-                                );
-                            } else {
-                                return (
-                                    <TextInput
-                                        multiline
-                                        placeholder="Start typing..."
-                                        placeholderTextColor='#3a3a3a'
-                                        style={styles.textInput}
-                                        value={item.content}
-                                        onChangeText={(text) => {
-                                            const updatedBlocks = [...contentBlocks];
-                                            updatedBlocks[index].content = text;
-                                            setContentBlocks(updatedBlocks);
-                                        }}
-                                        onFocus={() => setEditing(true)}
+                    {/* Content */}
+                    <View style={styles.content}>
+                        <TextInput
+                            placeholder="Title"
+                            placeholderTextColor='#3a3a3a'
+                            value={title}
+                            maxLength={60}
+                            numberOfLines={1}
+                            onChangeText={setTitle}
+                            onFocus={() => setEditing(true)}
+                            onBlur={() => setEditing(false)}
+                            style={styles.titleInput}
+                        />
+
+                        <View style={styles.infoBox}>
+                            <Text style={{ color: '#2a2a2a' }}>Last edit: {time + '  ' + date}</Text>
+                            <Text style={{ color: '#2a2a2a' }}>
+                                Characters: {
+                                    contentBlocks.filter(b => b.type === 'text')
+                                        .map(b => b.content.length).reduce((a, b) => a + b, 0)
+                                } / 3000
+                            </Text>
+                        </View>
+
+                        <FlatList
+                            data={contentBlocks}
+                            keyExtractor={(_, index) => index.toString()}
+                            renderItem={({ item, index }) => {
+                                if (item.type === 'image') {
+                                    return (
+                                        <Image
+                                            source={{ uri: item.content }}
+                                            style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
+                                            resizeMode="cover"
+                                        />
+                                    );
+                                } else {
+                                    return (
+                                        <TextInput
+                                            multiline
+                                            placeholder="Start typing..."
+                                            placeholderTextColor='#3a3a3a'
+                                            style={[styles.textInput, { fontSize }]}
+                                            value={item.content}
+                                            onChangeText={(text) => {
+                                                const updatedBlocks = [...contentBlocks];
+                                                updatedBlocks[index].content = text;
+                                                setContentBlocks(updatedBlocks);
+                                            }}
+                                            onFocus={() => setEditing(true)}
+                                        />
 
 
-                                    />
-                                );
-                            }
-                        }}
-                        ListFooterComponent={<View style={{ height: 320 }} />}
-                        showsVerticalScrollIndicator={false}
-                    />
+                                    );
+                                }
+                            }}
+                            ListFooterComponent={<View style={{ height: 320 }} />}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    </View>
+
+                    {/* Bottom Navigation Bar */}
+
+                    <View style={[styles.bottomNavigationBar, { backgroundColor: bgColor }]}>
+                        <FlatList
+                            data={BNB_DATA}
+                            horizontal
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                                <View style={styles.bottomNavBaritem}>
+                                    <TouchableOpacity onPress={() => onBottomNavPress(item.onPress)}>
+                                        {item.icon ? (
+                                            <Icon name={item.icon} size={24} color="#FFFFFF" />
+                                        ) : (
+                                            <Text style={styles.buttonText}>
+                                                {item.title}
+                                            </Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            showsHorizontalScrollIndicator={false}
+                        />
+
+                    </View>
+
+                    <StatusBar style="light" hidden={false} />
                 </View>
-
-                {/* Bottom Navigation Bar */}
-
-                <View style={styles.bottomNavigationBar}>
-                    <FlatList
-                        data={BNB_DATA}
-                        horizontal
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <View style={styles.bottomNavBaritem}>
-                                <TouchableOpacity onPress={() => onBottomNavPress(item.onPress)}>
-                                    {item.icon ? (
-                                        <Icon name={item.icon} size={24} color="#FFFFFF" />
-                                    ) : (
-                                        <Text style={styles.buttonText}>
-                                            {item.title}
-                                        </Text>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                        showsHorizontalScrollIndicator={false}
-                    />
-
-                </View>
-
-                <StatusBar style="light" hidden={false} />
-            </View>
+            </ImageBackground>
         </Provider>
     );
 }
@@ -249,13 +383,13 @@ const styles = StyleSheet.create({
     bottomNavigationBar: {
         flex: 1,
         position: "absolute",
-        bottom: 8,
+        bottom: 0,
     },
     bottomNavBaritem: {
         padding: 4,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: "#0f0f0f",
+        backgroundColor: "none",
         width: 64,
         height: 64,
     },
@@ -266,7 +400,7 @@ const styles = StyleSheet.create({
     },
     titleInput: {
         width: '100%',
-        color: theme.secondaryColor,
+        color: themes[0].secondaryColor,
         fontSize: 24,
         padding: 0,
         margin: 0
@@ -274,7 +408,7 @@ const styles = StyleSheet.create({
     textInput: {
         width: '100%',
         height: '100%',
-        color: theme.secondaryColor,
+        color: themes[0].secondaryColor,
         fontSize: 16,
         padding: 0,
         marginBottom: 10,
@@ -282,11 +416,72 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top'
     },
     buttonText: {
-        color: theme.secondaryColor,
+        color: themes[0].secondaryColor,
         fontSize: 24,
     },
     tinyLogo: {
         width: 24,
         height: 24,
     },
+
+
+    // STYLIZE MODAL
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.8)'
+    },
+    modalContainer: {
+        backgroundColor: '#1a1a1a',
+        padding: 20,
+        borderRadius: 12,
+        width: '90%',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 16
+    },
+    modalLabel: {
+        color: '#ccc',
+        marginTop: 10,
+        marginBottom: 4
+    },
+    optionRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 12
+    },
+    optionButton: {
+        backgroundColor: '#333',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        marginRight: 8,
+        borderRadius: 6,
+    },
+    optionSelected: {
+        backgroundColor: '#007bff',
+    },
+    colorBox: {
+        width: 32,
+        height: 32,
+        borderRadius: 6,
+        marginRight: 8,
+    },
+    colorSelected: {
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    modalCloseButton: {
+        marginTop: 16,
+        alignSelf: 'flex-end',
+        backgroundColor: '#007bff',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 6
+    }
+
 });

@@ -19,18 +19,18 @@ const styles = StyleSheet.create({
         height: 172,
         padding: 16,
         borderRadius: 16,
-        backgroundColor: theme.containerBg,
+        backgroundColor: theme[0].containerBg,
         gap: 16,
     },
 
     title: {
-        color: theme.lowerOpacityText,
+        color: theme[0].lowerOpacityText,
         fontSize: 16,
         fontWeight: 'bold',
     },
 
     text: {
         fontSize: 14,
-        color: theme.secondaryColor
+        color: theme[0].secondaryColor
     }
 })

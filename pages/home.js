@@ -130,11 +130,11 @@ const styles = StyleSheet.create({
         bottom: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.primaryColor,
+        backgroundColor: theme[0].primaryColor,
         borderRadius: 50,
     },
     buttonText: {
-        color: theme.secondaryColor,
+        color: theme[0].secondaryColor,
         fontSize: 32,
         fontWeight: 'bold',
     },
