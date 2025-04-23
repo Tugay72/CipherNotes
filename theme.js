@@ -1,7 +1,7 @@
 const themes = [
     {
         name: "dark",
-        primaryColor: "#1E82D9",
+        primaryColor: "black",
         secondaryColor: "#F2F2F0",
         lowerOpacityText: "#2995D9",
         containerBg: "#1a1a1a"
@@ -9,16 +9,9 @@ const themes = [
     {
         name: "light",
         primaryColor: "#f0f0f0",
-        secondaryColor: "#ffffff",
+        secondaryColor: "#000000",
         lowerOpacityText: "#4D90FE",
         containerBg: "#f2f2f2"
-    },
-    {
-        name: "forest",
-        primaryColor: "#228B22",
-        secondaryColor: "#E8F5E9",
-        lowerOpacityText: "#66BB6A",
-        containerBg: "#1B5E20"
     },
     {
         name: "sunset",
@@ -27,12 +20,41 @@ const themes = [
         lowerOpacityText: "#FF8A65",
         containerBg: "#4E342E"
     },
+
     {
-        name: "ocean",
-        primaryColor: "#0277BD",
-        secondaryColor: "#E1F5FE",
-        lowerOpacityText: "#4FC3F7",
-        containerBg: "#01579B"
+        name: "midnight",
+        primaryColor: "#1A1A2E",
+        secondaryColor: "#EDE7F6",
+        lowerOpacityText: "#9575CD",
+        containerBg: "#0F0F1C"
+    },
+    {
+        name: "sand",
+        primaryColor: "#C2B280",
+        secondaryColor: "#FDF6E3",
+        lowerOpacityText: "#D7CCC8",
+        containerBg: "#A89F68"
+    },
+    {
+        name: "blush",
+        primaryColor: "#f5bdc7",
+        secondaryColor: "#fff8fa",
+        lowerOpacityText: "#F8BBD0",
+        containerBg: "#F48FB1"
+    },
+    {
+        name: "hacker",
+        primaryColor: "#0f0f0f",
+        secondaryColor: "#39FF14",
+        lowerOpacityText: "#00FFEA",
+        containerBg: "#121212"
+    },
+    {
+        name: "cyberpunk",
+        primaryColor: "#ffff00",
+        secondaryColor: "#2a2a2a",
+        lowerOpacityText: "#00FFEA",
+        containerBg: "#121212"
     }
 ];
 

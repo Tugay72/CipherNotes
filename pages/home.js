@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
         bottom: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme[0].primaryColor,
+        backgroundColor: theme[0].lowerOpacityText,
         borderRadius: 50,
     },
     buttonText: {

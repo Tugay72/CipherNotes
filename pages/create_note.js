@@ -25,7 +25,7 @@ export default function CreateNote({ navigation, route }) {
     const [stylizeVisible, setStylizeVisible] = useState(false);
     const [fontSize, setFontSize] = useState(16);
     const [fontStyle, setFontStyle] = useState('normal');
-    const [fontColor, setFontColor] = useState('#')
+    const [fontColor, setFontColor] = useState('#ffffff')
     const [bgImage, setBgImage] = useState(null);
     const [bgColor, setBgColor] = useState('#000000');
     const [selectedTheme, setSelectedTheme] = useState(null);
@@ -147,7 +147,7 @@ export default function CreateNote({ navigation, route }) {
                         {/* Font Size */}
                         <Text style={styles.modalLabel}>Font Size</Text>
                         <View style={styles.optionRow}>
-                            <Text style={{ color: '#aaa', marginBottom: 8 }}>Font Size: {fontSize}</Text>
+                            <Text style={{ color: '#aaa', marginBottom: 8 }}>{fontSize}</Text>
                             <Slider
                                 style={{ width: '100%', height: 40 }}
                                 minimumValue={8}
@@ -171,7 +171,7 @@ export default function CreateNote({ navigation, route }) {
                         </TouchableOpacity>
 
                         <View style={styles.optionRow}>
-                            {['#000000', '#ffffff', '#003366', '#1a1a1a'].map(color => (
+                            {['#000000', '#ffffff'].map(color => (
                                 <TouchableOpacity
                                     key={color}
                                     style={[
@@ -193,16 +193,28 @@ export default function CreateNote({ navigation, route }) {
                             {themes.map((theme) => (
                                 <TouchableOpacity
                                     key={theme.name}
-                                    style={[styles.themeButton, selectedTheme === theme.name && styles.themeSelected]}
+                                    style={[
+                                        styles.colorBox,
+                                        { backgroundColor: theme.primaryColor },
+                                        selectedTheme === theme.name && styles.colorBoxSelected
+                                    ]}
                                     onPress={() => {
                                         applyTheme(theme);
                                         setSelectedTheme(theme.name);
                                     }}
                                 >
-                                    <Text style={styles.themeText}>{theme.name}</Text>
+                                    <View
+                                        style={[
+                                            styles.secondaryDot,
+                                            { backgroundColor: theme.secondaryColor }
+                                        ]}
+                                    />
                                 </TouchableOpacity>
                             ))}
                         </View>
+
+
+
 
 
                         <TouchableOpacity
@@ -227,12 +239,12 @@ export default function CreateNote({ navigation, route }) {
                     {/* Top Navigation */}
                     <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
                         <TouchableOpacity onPress={goBack}>
-                            <Text style={styles.buttonText}>←</Text>
+                            <Text style={[styles.buttonText, { color: fontColor }]}>←</Text>
                         </TouchableOpacity>
 
                         {editing ? (
                             <TouchableOpacity onPress={onSaveInput}>
-                                <Text style={styles.buttonText}>✔</Text>
+                                <Text style={[styles.buttonText, { color: fontColor }]}>✔</Text>
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity onPress={openMenu}>
@@ -241,10 +253,7 @@ export default function CreateNote({ navigation, route }) {
                                     onDismiss={closeMenu}
                                     anchor={
                                         <TouchableOpacity onPress={openMenu}>
-                                            <Image
-                                                style={styles.tinyLogo}
-                                                source={require('../assets/dots.png')}
-                                            />
+                                            <Text style={[styles.textInput, { fontSize: 24, color: fontColor }]}>:</Text>
                                         </TouchableOpacity>
                                     }
                                 >
@@ -275,12 +284,12 @@ export default function CreateNote({ navigation, route }) {
                             onChangeText={setTitle}
                             onFocus={() => setEditing(true)}
                             onBlur={() => setEditing(false)}
-                            style={styles.titleInput}
+                            style={[styles.titleInput, { color: fontColor }]}
                         />
 
                         <View style={styles.infoBox}>
-                            <Text style={{ color: '#2a2a2a' }}>Last edit: {time + '  ' + date}</Text>
-                            <Text style={{ color: '#2a2a2a' }}>
+                            <Text style={{ color: fontColor + 60 }}>Last edit: {time + '  ' + date}</Text>
+                            <Text style={{ color: fontColor + 60 }}>
                                 Characters: {
                                     contentBlocks.filter(b => b.type === 'text')
                                         .map(b => b.content.length).reduce((a, b) => a + b, 0)
@@ -305,8 +314,8 @@ export default function CreateNote({ navigation, route }) {
                                         <TextInput
                                             multiline
                                             placeholder="Start typing..."
-                                            placeholderTextColor='#3a3a3a'
-                                            style={[styles.textInput, { fontSize }]}
+                                            placeholderTextColor={fontColor + 75}
+                                            style={[styles.textInput, , { color: fontColor, fontSize: fontSize }]}
                                             value={item.content}
                                             onChangeText={(text) => {
                                                 const updatedBlocks = [...contentBlocks];
@@ -326,8 +335,7 @@ export default function CreateNote({ navigation, route }) {
                     </View>
 
                     {/* Bottom Navigation Bar */}
-
-                    <View style={[styles.bottomNavigationBar, { backgroundColor: bgColor }]}>
+                    <View style={[styles.bottomNavigationBar, { backgroundColor: 'black', paddingRight: 140 }]}>
                         <FlatList
                             data={BNB_DATA}
                             horizontal
@@ -432,29 +440,35 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.8)'
     },
+
     modalContainer: {
         backgroundColor: '#1a1a1a',
         padding: 20,
         borderRadius: 12,
         width: '90%',
+        height: '80%'
     },
+
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
         marginBottom: 16
     },
+
     modalLabel: {
         color: '#ccc',
         marginTop: 10,
         marginBottom: 4
     },
+
     optionRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
         marginBottom: 12
     },
+
     optionButton: {
         backgroundColor: '#333',
         paddingVertical: 6,
@@ -462,19 +476,23 @@ const styles = StyleSheet.create({
         marginRight: 8,
         borderRadius: 6,
     },
+
     optionSelected: {
         backgroundColor: '#007bff',
     },
+
     colorBox: {
         width: 32,
         height: 32,
         borderRadius: 6,
         marginRight: 8,
     },
+
     colorSelected: {
         borderWidth: 2,
         borderColor: '#fff',
     },
+
     modalCloseButton: {
         marginTop: 16,
         alignSelf: 'flex-end',
@@ -482,6 +500,30 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 6
-    }
+    },
 
+    colorBox: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        margin: 8,
+        borderWidth: 2,
+        borderColor: 'none',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-end',
+        padding: 4,
+    },
+
+    colorBoxSelected: {
+        borderColor: '#ffffff',
+        borderWidth: 3,
+    },
+
+    secondaryDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: '#00000033',
+    }
 });
