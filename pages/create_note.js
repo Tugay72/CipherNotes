@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
-import Slider from '@react-native-community/slider';
 
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from 'expo-image-picker';
 
 import themes from "../theme";
-import { saveNote } from '../noteStorage';
+import StylingModal from "../components/styling_modal";
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -18,8 +17,8 @@ export default function CreateNote({ navigation, route }) {
     const [contentBlocks, setContentBlocks] = useState([
         { type: 'text', content: route.params?.text || '' }
     ]);
-    const [time, setTime] = useState("");
-    const [date, setDate] = useState("");
+    const [time, setTime] = useState(route.params?.time || '');
+    const [date, setDate] = useState(route.params?.date || '');
     const [editing, setEditing] = useState(false);
 
     const [stylizeVisible, setStylizeVisible] = useState(false);
@@ -38,9 +37,11 @@ export default function CreateNote({ navigation, route }) {
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
-    const goBack = () => {
+    const goBack = async () => {
+        await saveNote();
         navigation.navigate('Home');
     };
+
 
     const onBottomNavPress = (onPressFunction) => {
         if (Keyboard.isVisible()) {
@@ -50,33 +51,28 @@ export default function CreateNote({ navigation, route }) {
     };
 
 
-    const saveNote = () => {
+    const saveNote = async () => {
         const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        setTime(`${hours}:${minutes}:${seconds}`);
+        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+        setTime(formattedTime);
+        setDate(formattedDate);
 
-        const day = now.getDate().toString().padStart(2, '0');
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const year = now.getFullYear();
-        setDate(`${day}/${month}/${year}`);
-
-        // Merge all text blocks into one for saving
         const finalText = contentBlocks
             .filter(b => b.type === 'text')
             .map(b => b.content)
             .join('\n');
 
-        saveNoteByID(id, title, finalText);
-        navigation.navigate('Home');
+        saveNoteByID(id, title, finalText, formattedTime, formattedDate);
+        Keyboard.dismiss();
     };
 
-    const onSaveInput = () => {
+
+    const onSaveInput = async () => {
         Keyboard.dismiss();
         setEditing(false);
         setVisible(false);
-        saveNote();
+        await saveNote();
     };
 
     const addImage = async () => {
@@ -134,98 +130,21 @@ export default function CreateNote({ navigation, route }) {
 
     return (
         <Provider>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={stylizeVisible}
-                onRequestClose={() => setStylizeVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Stylize Note</Text>
+            <StylingModal
+                stylizeVisible={stylizeVisible}
+                setStylizeVisible={setStylizeVisible}
+                fontSize={fontSize}
+                setFontSize={setFontSize}
+                bgImage={bgImage}
+                setBgImage={setBgImage}
+                bgColor={bgColor}
+                setBgColor={setBgColor}
+                selectedTheme={selectedTheme}
+                setSelectedTheme={setSelectedTheme}
+                applyTheme={applyTheme}
+                themes={themes}>
 
-                        {/* Font Size */}
-                        <Text style={styles.modalLabel}>Font Size</Text>
-                        <View style={styles.optionRow}>
-                            <Text style={{ color: '#aaa', marginBottom: 8 }}>{fontSize}</Text>
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={8}
-                                maximumValue={32}
-                                step={1}
-                                minimumTrackTintColor="#888"
-                                maximumTrackTintColor="#444"
-                                thumbTintColor="#ddd"
-                                value={fontSize}
-                                onValueChange={setFontSize}
-                            />
-                        </View>
-
-                        {/* Background Color */}
-                        <Text style={styles.modalLabel}>Background</Text>
-                        <TouchableOpacity
-                            onPress={pickBackgroundImage}
-                            style={[styles.optionButton, { marginBottom: 12 }]}
-                        >
-                            <Text style={{ color: 'white' }}>Pick Background Image</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.optionRow}>
-                            {['#000000', '#ffffff'].map(color => (
-                                <TouchableOpacity
-                                    key={color}
-                                    style={[
-                                        styles.colorBox,
-                                        { backgroundColor: color },
-                                        bgColor === color && !bgImage && styles.colorSelected
-                                    ]}
-                                    onPress={() => {
-                                        setBgColor(color);
-                                        setBgImage(null);
-                                    }}
-                                />
-                            ))}
-                        </View>
-
-                        {/* Theme Selection */}
-                        <Text style={styles.modalLabel}>Choose a Theme</Text>
-                        <View style={styles.optionRow}>
-                            {themes.map((theme) => (
-                                <TouchableOpacity
-                                    key={theme.name}
-                                    style={[
-                                        styles.colorBox,
-                                        { backgroundColor: theme.primaryColor },
-                                        selectedTheme === theme.name && styles.colorBoxSelected
-                                    ]}
-                                    onPress={() => {
-                                        applyTheme(theme);
-                                        setSelectedTheme(theme.name);
-                                    }}
-                                >
-                                    <View
-                                        style={[
-                                            styles.secondaryDot,
-                                            { backgroundColor: theme.secondaryColor }
-                                        ]}
-                                    />
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-
-
-
-
-                        <TouchableOpacity
-                            style={styles.modalCloseButton}
-                            onPress={() => setStylizeVisible(false)}
-                        >
-                            <Text style={{ color: 'white' }}>Done</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+            </StylingModal>
 
 
             <ImageBackground

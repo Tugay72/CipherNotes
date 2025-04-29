@@ -35,24 +35,24 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Empty Title', text = 'Empty Text') => {
+    const saveNoteByID = async (id, title = 'Empty Title', text = 'Empty Text', time = '/', date = '/') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
 
         if (index !== -1) {
-            // update existing
-            updatedNotes[index] = { id, title, text };
+
+            updatedNotes[index] = { id, title, text, time, date };
         } else {
-            // add new
-            const newId = (Date.now()).toString(); // unique id
-            updatedNotes.push({ id: newId, title, text });
+
+            const newId = (Date.now()).toString();
+            updatedNotes.push({ id: newId, title, text, time, date });
         }
 
         await saveNotes(updatedNotes);
     };
 
     const onCreateNote = () => {
-        navigation.navigate('CreateNote', { id: null, title: '', text: '', saveNoteByID });
+        navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID });
     };
 
     return (
@@ -80,7 +80,7 @@ export default function Home({ navigation }) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.noteItem}
-                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, saveNoteByID })}
+                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, time: item.time, date: item.date, saveNoteByID })}
                     >
                         <NoteBox note={item} />
                     </TouchableOpacity>

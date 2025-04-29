@@ -1,12 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const saveNote = async (id, noteData) => {
+
+export const saveNote = async (id, noteData, time, date) => {
     try {
-        await AsyncStorage.setItem(`note-${id}`, JSON.stringify(noteData));
+        const noteWithMetadata = {
+            ...noteData,
+            time: time,
+            date: date,
+        };
+        await AsyncStorage.setItem(`note-${id}`, JSON.stringify(noteWithMetadata));
     } catch (error) {
         console.error('Error saving note:', error);
     }
 };
+
 
 export const loadNote = async (id) => {
     try {
@@ -18,6 +25,7 @@ export const loadNote = async (id) => {
     }
 };
 
+
 export const deleteNote = async (id) => {
     try {
         await AsyncStorage.removeItem(`note-${id}`);
@@ -25,6 +33,7 @@ export const deleteNote = async (id) => {
         console.error('Error deleting note:', error);
     }
 };
+
 
 export const listNoteIDs = async () => {
     try {
