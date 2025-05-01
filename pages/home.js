@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import NoteBox from '../components/note_box';
@@ -8,21 +8,55 @@ import theme from '../theme';
 
 export default function Home({ navigation }) {
     const [notesData, setNotesData] = useState([]);
+    const [searchText, setSearchText] = useState('');
+    const [filteredNotes, setFilteredNotes] = useState([]);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const menuAnimation = useState(new Animated.Value(-250))[0]; // Başlangıçta menü dışında
 
     useEffect(() => {
         loadNotes();
-    }, []);
+
+        // Geri tuşuna basıldığında menüyü kapat
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (isMenuOpen) {
+                closeMenu();
+                return true; // Gerçekten geri gitmesini engelleriz
+            }
+            return false; // Normal geri tuşu davranışı
+        });
+
+        return () => backHandler.remove(); // Temizleme
+    }, [isMenuOpen]);
+
+    useEffect(() => {
+        filterNotes();
+    }, [searchText, notesData]);
 
     const loadNotes = async () => {
         try {
             const storedNotes = await AsyncStorage.getItem('notes');
             if (storedNotes) {
-                setNotesData(JSON.parse(storedNotes));
+                const notes = JSON.parse(storedNotes);
+                setNotesData(notes);
+                setFilteredNotes(notes);
             } else {
                 setNotesData([]);
+                setFilteredNotes([]);
             }
         } catch (error) {
             console.error('Error loading notes:', error);
+        }
+    };
+
+    const filterNotes = () => {
+        if (searchText === '') {
+            setFilteredNotes(notesData);
+        } else {
+            const filtered = notesData.filter(note =>
+                note.title.toLowerCase().includes(searchText.toLowerCase())
+            );
+            setFilteredNotes(filtered);
         }
     };
 
@@ -30,6 +64,7 @@ export default function Home({ navigation }) {
         try {
             await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
             setNotesData(newNotes);
+            setFilteredNotes(newNotes);
         } catch (error) {
             console.error('Error saving notes:', error);
         }
@@ -40,10 +75,8 @@ export default function Home({ navigation }) {
         const index = updatedNotes.findIndex(note => note.id === id);
 
         if (index !== -1) {
-
             updatedNotes[index] = { id, title, text, time, date };
         } else {
-
             const newId = (Date.now()).toString();
             updatedNotes.push({ id: newId, title, text, time, date });
         }
@@ -55,26 +88,73 @@ export default function Home({ navigation }) {
         navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID });
     };
 
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+        const toValue = isMenuOpen ? -250 : 0;
+        Animated.timing(menuAnimation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const closeMenu = () => {
+        setIsMenuOpen(false);
+        Animated.timing(menuAnimation, {
+            toValue: -250,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handleSearchBlur = () => {
+
+        if (isMenuOpen) {
+            closeMenu();
+        }
+    };
+
     return (
         <View style={styles.container}>
+            {/* Side Menu with animation */}
+            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation }] }]}>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Settings')}>
+                    <Text style={styles.menuItemText}>Settings</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem} onPress={closeMenu}>
+                    <Text style={styles.menuItemText}>Close Menu</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem}>
+                    <Text style={styles.buttonText}>☾</Text>
+                </TouchableOpacity>
+            </Animated.View>
 
             {/* Top Navigation */}
             <View style={styles.topNavContainer}>
-                <TouchableOpacity>
-                    <Text style={styles.buttonText}>--</Text>
-                </TouchableOpacity>
+                <View style={styles.searchBar}>
+                    <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                        <Text style={styles.buttonText}>☰</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-                    <Image
-                        style={styles.tinyLogo}
-                        source={require('../assets/settings.png')}
+                    <TextInput
+                        style={{
+                            color: theme[0].secondaryColor,
+                        }}
+                        placeholder="Search notes..."
+                        placeholderTextColor={theme[0].secondaryColor}
+                        numberOfLines={1}
+                        value={searchText}
+                        onChangeText={setSearchText}
+                        onBlur={handleSearchBlur}
                     />
-                </TouchableOpacity>
+                </View>
+
+
             </View>
 
             {/* Notes */}
             <FlatList
-                data={notesData}
+                data={filteredNotes}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 renderItem={({ item }) => (
@@ -98,7 +178,6 @@ export default function Home({ navigation }) {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#000000',
@@ -108,14 +187,26 @@ const styles = StyleSheet.create({
     topNavContainer: {
         width: '100%',
         height: 72,
+        marginTop: 32,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
+        paddingHorizontal: 16,
         backgroundColor: 'black',
+    },
+    searchBar: {
+        flex: 1,
+        height: 48,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        backgroundColor: '#1a1a1a',
+        color: theme[0].secondaryColor,
+        paddingLeft: 12,
+        borderRadius: 8,
     },
     notes: {
         paddingHorizontal: 16,
+        marginTop: 12,
         paddingBottom: 72,
         gap: 16,
     },
@@ -141,5 +232,28 @@ const styles = StyleSheet.create({
     tinyLogo: {
         width: 24,
         height: 24,
+    },
+    menu: {
+        flex: 1,
+        zIndex: 10,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: 200,
+        height: '120%',
+        backgroundColor: theme[0].primaryColor,
+        paddingTop: 60,
+        paddingLeft: 20,
+    },
+    menuItem: {
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+    },
+    menuItemText: {
+        color: theme[0].secondaryColor,
+        fontSize: 18,
+    },
+    menuButton: {
+        marginRight: 16,
     },
 });

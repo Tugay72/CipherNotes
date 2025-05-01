@@ -234,7 +234,7 @@ export default function CreateNote({ navigation, route }) {
                                             multiline
                                             placeholder="Start typing..."
                                             placeholderTextColor={fontColor + 75}
-                                            style={[styles.textInput, , { color: fontColor, fontSize: fontSize }]}
+                                            style={[styles.textInput, { color: fontColor, fontSize: fontSize }]}
                                             value={item.content}
                                             onChangeText={(text) => {
                                                 const updatedBlocks = [...contentBlocks];
@@ -243,14 +243,13 @@ export default function CreateNote({ navigation, route }) {
                                             }}
                                             onFocus={() => setEditing(true)}
                                         />
-
-
                                     );
                                 }
                             }}
                             ListFooterComponent={<View style={{ height: 320 }} />}
                             showsVerticalScrollIndicator={false}
                         />
+
                     </View>
 
                     {/* Bottom Navigation Bar */}
