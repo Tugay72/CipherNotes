@@ -91,9 +91,12 @@ export default function CreateNote({ navigation, route }) {
         if (!result.canceled && result.assets?.length > 0) {
             const newUri = result.assets[0].uri;
             const newBlocks = [...contentBlocks];
+            if (newBlocks[0]?.type === 'text') {
+                newBlocks[0].content = ' ';
+            }
 
             newBlocks.push({ type: 'image', content: newUri });
-            newBlocks.push({ type: 'text', content: '' });
+            newBlocks.push({ type: 'text', content: ' ' });
 
             setContentBlocks(newBlocks);
         }
@@ -248,6 +251,7 @@ export default function CreateNote({ navigation, route }) {
                             }}
                             ListFooterComponent={<View style={{ height: 320 }} />}
                             showsVerticalScrollIndicator={false}
+                            scrollEnabled={false}
                         />
 
                     </View>
@@ -333,7 +337,6 @@ const styles = StyleSheet.create({
     },
     textInput: {
         width: '100%',
-        height: '100%',
         color: themes[0].secondaryColor,
         fontSize: 16,
         padding: 0,

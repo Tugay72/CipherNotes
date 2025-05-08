@@ -12,7 +12,7 @@ export default function Home({ navigation }) {
     const [filteredNotes, setFilteredNotes] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const menuAnimation = useState(new Animated.Value(-250))[0]; // Başlangıçta menü dışında
+    const menuAnimation = useState(new Animated.Value(-250))[0];
 
     useEffect(() => {
         loadNotes();
@@ -21,12 +21,12 @@ export default function Home({ navigation }) {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (isMenuOpen) {
                 closeMenu();
-                return true; // Gerçekten geri gitmesini engelleriz
+                return true;
             }
-            return false; // Normal geri tuşu davranışı
+            return false;
         });
 
-        return () => backHandler.remove(); // Temizleme
+        return () => backHandler.remove();
     }, [isMenuOpen]);
 
     useEffect(() => {
@@ -70,9 +70,17 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Empty Title', text = 'Empty Text', time = '/', date = '/') => {
+    const saveNoteByID = async (id, title = 'Title', text = 'Text', time = '/', date = '/') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
+
+        if (title == '' || title == null) {
+            title = 'Title'
+        }
+
+        if (text == '' || text == null) {
+            text = 'Text'
+        }
 
         if (index !== -1) {
             updatedNotes[index] = { id, title, text, time, date };

@@ -14,15 +14,23 @@ const Stack = createStackNavigator();
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [storedPassword, setStoredPassword] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const getStoredPassword = async () => {
             const password = await AsyncStorage.getItem('appPassword');
             setStoredPassword(password);
+
+            if (password === null) {
+                setIsAuthenticated(true);
+            }
+
+            setIsLoading(false);
         };
 
         getStoredPassword();
     }, []);
+
 
     const handlePasswordConfirm = (enteredPassword) => {
         if (enteredPassword === storedPassword) {
@@ -33,7 +41,12 @@ export default function App() {
         return false;
     };
 
-    if (!isAuthenticated || storedPassword === null) {
+
+    if (isLoading) {
+        return null;
+    }
+
+    if (!isAuthenticated) {
         return (
             <View style={styles.container}>
                 <PasswordModal
@@ -44,6 +57,8 @@ export default function App() {
             </View>
         );
     }
+
+
 
     return (
         <NavigationContainer>
