@@ -92,8 +92,18 @@ export default function Home({ navigation }) {
         await saveNotes(updatedNotes);
     };
 
+    const deleteNoteByID = async (id) => {
+        const updatedNotes = notesData.filter(note => note.id !== id);
+        console.log('GÜNCELLENMİŞ NOTES:', updatedNotes);
+        await saveNotes(updatedNotes);
+        console.log('NOTLAR KAYDEDİLDİ');
+    };
+
+
+
+
     const onCreateNote = () => {
-        navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID });
+        navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID, deleteNoteByID });
     };
 
     const toggleMenu = () => {
@@ -168,7 +178,7 @@ export default function Home({ navigation }) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.noteItem}
-                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, time: item.time, date: item.date, saveNoteByID })}
+                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, time: item.time, date: item.date, saveNoteByID, deleteNoteByID })}
                     >
                         <NoteBox note={item} />
                     </TouchableOpacity>

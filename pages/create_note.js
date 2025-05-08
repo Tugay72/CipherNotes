@@ -11,6 +11,8 @@ import StylingModal from "../components/styling_modal";
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
     const { saveNoteByID } = route.params;
+    const { deleteNoteByID } = route.params;
+
 
     const [visible, setVisible] = useState(false);
     const [title, setTitle] = useState(route.params?.title || '');
@@ -67,6 +69,18 @@ export default function CreateNote({ navigation, route }) {
         Keyboard.dismiss();
     };
 
+    const deleteNote = async () => {
+        try {
+            console.log('Deleting');
+            await deleteNoteByID(id);
+            console.log('Navigating');
+            navigation.navigate('Home');
+        } catch (error) {
+            console.log('HATA:', error);
+        }
+    };
+
+
 
     const onSaveInput = async () => {
         Keyboard.dismiss();
@@ -74,6 +88,10 @@ export default function CreateNote({ navigation, route }) {
         setVisible(false);
         await saveNote();
     };
+
+    const onDeleteInput = async () => {
+        deleteNote()
+    }
 
     const addImage = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -189,7 +207,7 @@ export default function CreateNote({ navigation, route }) {
                                     />
 
                                     <Divider />
-                                    <Menu.Item onPress={() => { console.log('Option 3 pressed'); closeMenu(); }} title="Delete" />
+                                    <Menu.Item onPress={() => { onDeleteInput(); closeMenu(); }} title="Delete" />
                                 </Menu>
                             </TouchableOpacity>
                         )}
