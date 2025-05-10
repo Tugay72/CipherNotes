@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import NoteBox from '../components/note_box';
@@ -147,6 +147,12 @@ export default function Home({ navigation }) {
                 </TouchableOpacity>
             </Animated.View>
 
+            {isMenuOpen && (
+                <TouchableWithoutFeedback onPress={closeMenu}>
+                    <View style={styles.overlay} />
+                </TouchableWithoutFeedback>
+            )}
+
             {/* Top Navigation */}
             <View style={styles.topNavContainer}>
                 <View style={styles.searchBar}>
@@ -274,4 +280,15 @@ const styles = StyleSheet.create({
     menuButton: {
         marginRight: 16,
     },
+
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'transparent', // Gerekirse yarı saydam yapabilirsin
+        zIndex: 5, // Menüden düşük ama içerikten yüksek olmalı
+    },
+
 });

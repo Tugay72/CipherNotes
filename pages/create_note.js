@@ -44,7 +44,6 @@ export default function CreateNote({ navigation, route }) {
         navigation.navigate('Home');
     };
 
-
     const onBottomNavPress = (onPressFunction) => {
         if (Keyboard.isVisible()) {
             return;
@@ -79,8 +78,6 @@ export default function CreateNote({ navigation, route }) {
             console.log('HATA:', error);
         }
     };
-
-
 
     const onSaveInput = async () => {
         Keyboard.dismiss();
@@ -117,27 +114,6 @@ export default function CreateNote({ navigation, route }) {
             newBlocks.push({ type: 'text', content: ' ' });
 
             setContentBlocks(newBlocks);
-        }
-    };
-
-    const pickBackgroundImage = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            alert("Permission to access camera roll is required!");
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
-
-        if (!result.canceled && result.assets?.length > 0) {
-            setBgImage(result.assets[0].uri);
-        }
-        else {
-            setBgColor('#f0f0f0')
         }
     };
 
@@ -179,12 +155,20 @@ export default function CreateNote({ navigation, route }) {
                     {/* Top Navigation */}
                     <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
                         <TouchableOpacity onPress={goBack}>
-                            <Text style={[styles.buttonText, { color: fontColor }]}>←</Text>
+                            <Icon style={[
+                                styles.buttonText,
+                                {
+                                    paddingHorizontal: 4,
+                                    paddingVertical: 14,
+                                    color: fontColor,
+                                    fontSize: 24,
+                                    fontWeight: 900
+                                }]} name="arrow-back-ios-new" />
                         </TouchableOpacity>
 
                         {editing ? (
                             <TouchableOpacity onPress={onSaveInput}>
-                                <Text style={[styles.buttonText, { color: fontColor }]}>✔</Text>
+                                <Text style={[styles.buttonText, { paddingHorizontal: 8, color: fontColor }]}>✔</Text>
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity onPress={openMenu}>
@@ -193,7 +177,7 @@ export default function CreateNote({ navigation, route }) {
                                     onDismiss={closeMenu}
                                     anchor={
                                         <TouchableOpacity onPress={openMenu}>
-                                            <Text style={[styles.textInput, { fontSize: 24, color: fontColor }]}>:</Text>
+                                            <Text style={[styles.textInput, { fontSize: 32, paddingHorizontal: 8, color: fontColor }]}>⋮</Text>
                                         </TouchableOpacity>
                                     }
                                 >
@@ -312,14 +296,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     topNavContainer: {
+        flex: 1,
         width: '100%',
-        height: 64,
+        height: 96,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 16,
+        padding: 4,
         backgroundColor: 'black',
         position: 'absolute',
-        top: 24,
+        top: 32,
         left: 0,
     },
     content: {

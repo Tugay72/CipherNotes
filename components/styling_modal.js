@@ -15,7 +15,6 @@ export default function StylingModal({
     setSelectedTheme,
     applyTheme,
     themes,
-    pickBackgroundImage
 }) {
     return (
         <Modal
@@ -46,13 +45,7 @@ export default function StylingModal({
                     </View>
 
                     {/* Background Color */}
-                    <Text style={styles.modalLabel}>Background</Text>
-                    <TouchableOpacity
-                        onPress={pickBackgroundImage}
-                        style={[styles.optionButton, { marginBottom: 12 }]}
-                    >
-                        <Text style={{ color: 'white' }}>Pick Background Image</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.modalLabel}>Background Color</Text>
                     <View style={styles.optionRow}>
                         {['#000000', '#ffffff'].map((color) => (
                             <TouchableOpacity
