@@ -27,7 +27,7 @@ export default function App() {
 
             setIsLoading(false);
         };
-
+        2
         getStoredPassword();
     }, []);
 
@@ -57,8 +57,6 @@ export default function App() {
             </View>
         );
     }
-
-
 
     return (
         <NavigationContainer>

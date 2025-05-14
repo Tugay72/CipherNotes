@@ -1,30 +1,43 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoJS from 'crypto-js';
+import { ENCRYPTION_KEY } from '@env';
+
+const encrypt = (text) => {
+    return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
+};
+
+const decrypt = (cipherText) => {
+    const bytes = CryptoJS.AES.decrypt(cipherText, ENCRYPTION_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+};
 
 
 export const saveNote = async (id, noteData, time, date) => {
     try {
         const noteWithMetadata = {
             ...noteData,
-            time: time,
-            date: date,
+            time,
+            date,
         };
-        await AsyncStorage.setItem(`note-${id}`, JSON.stringify(noteWithMetadata));
+        const plainText = JSON.stringify(noteWithMetadata);
+        const encryptedText = encrypt(plainText);
+        await AsyncStorage.setItem(`note-${id}`, encryptedText);
     } catch (error) {
         console.error('Error saving note:', error);
     }
 };
 
-
 export const loadNote = async (id) => {
     try {
-        const data = await AsyncStorage.getItem(`note-${id}`);
-        return data ? JSON.parse(data) : null;
+        const encryptedText = await AsyncStorage.getItem(`note-${id}`);
+        if (!encryptedText) return null;
+        const plainText = decrypt(encryptedText);
+        return JSON.parse(plainText);
     } catch (error) {
         console.error('Error loading note:', error);
         return null;
     }
 };
-
 
 export const deleteNote = async (id) => {
     try {
@@ -33,7 +46,6 @@ export const deleteNote = async (id) => {
         console.error('Error deleting note:', error);
     }
 };
-
 
 export const listNoteIDs = async () => {
     try {
