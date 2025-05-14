@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
+import { Audio } from 'expo-av';
 
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from 'expo-image-picker';
+import VoiceNote from '../components/voice_note'
 
 import themes from "../theme";
 import StylingModal from "../components/styling_modal";
+
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -30,6 +33,10 @@ export default function CreateNote({ navigation, route }) {
     const [bgImage, setBgImage] = useState(null);
     const [bgColor, setBgColor] = useState('#000000');
     const [selectedTheme, setSelectedTheme] = useState(null);
+
+    const [audioUri, setAudioUri] = useState(null);
+    const [sound, setSound] = useState(null);
+    const [showVoiceNote, setShowVoiceNote] = useState(false);
 
     const applyTheme = (theme) => {
         setBgColor(theme.primaryColor);
@@ -117,9 +124,56 @@ export default function CreateNote({ navigation, route }) {
         }
     };
 
+    const onAudioSave = (uri, title) => {
+        setAudioUri(uri);
+        setShowVoiceNote(false);
+
+        const newBlocks = [...contentBlocks];
+        if (newBlocks[0].type == 'text' && newBlocks[0].content == ' ') {
+            newBlocks[0].content = ' ';
+        }
+        newBlocks.push({ type: 'audio', content: uri, title: title || 'Voice Note' });
+        newBlocks.push({ type: 'text', content: ' ' });
+        setContentBlocks(newBlocks);
+    };
+
+    const playAudio = async (uri) => {
+        if (sound) {
+            await sound.stopAsync();
+            setSound(null);
+        }
+
+        const { sound: newSound } = await Audio.Sound.createAsync(
+            { uri },
+            { shouldPlay: true }
+        );
+        setSound(newSound);
+    };
+
+    const stopAudio = async () => {
+        if (sound) {
+            await sound.stopAsync();
+            setSound(null);
+        }
+    };
+
+    const deleteAudio = (index) => {
+        const newBlocks = [...contentBlocks];
+        newBlocks.splice(index, 1);
+        setContentBlocks(newBlocks);
+
+        if (newBlocks[0].type == 'text' && newBlocks[0].content == ' ') {
+            newBlocks[0].content = ''
+        }
+
+    };
+
+
+
+
 
     const BNB_DATA = [
-        { id: "1", icon: 'record-voice-over', onPress: () => console.log("Voice Recording Started") },
+        { id: "1", icon: 'record-voice-over', onPress: () => setShowVoiceNote(true) },
         { id: "2", icon: 'image', onPress: addImage },
         { id: "3", icon: 'brush', onPress: () => console.log("Open Drawing Canvas") },
         { id: "4", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
@@ -225,6 +279,7 @@ export default function CreateNote({ navigation, route }) {
                             data={contentBlocks}
                             keyExtractor={(_, index) => index.toString()}
                             renderItem={({ item, index }) => {
+                                console.log(item)
                                 if (item.type === 'image') {
                                     return (
                                         <Image
@@ -232,6 +287,39 @@ export default function CreateNote({ navigation, route }) {
                                             style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
                                             resizeMode="cover"
                                         />
+                                    );
+                                } else if (item.type === 'audio') {
+                                    return (
+                                        <View style={{ marginVertical: 16, }}>
+                                            <Text style={{ color: fontColor, fontSize: 16, marginBottom: 10 }}>
+                                                🎤 {item.title}:
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        if (!sound) {
+                                                            playAudio(item.content);
+                                                        } else {
+                                                            stopAudio();
+                                                        }
+                                                    }}
+                                                    style={[styles.voiceNote, { width: '75%' }]}
+                                                >
+                                                    <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
+                                                        {sound ? 'Stop' : 'Play'}
+                                                    </Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    onPress={() => deleteAudio(index)}
+                                                    style={[styles.voiceNote, { backgroundColor: '#505050', width: '20%' }]}
+                                                >
+                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
+                                                        🗑️
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
                                     );
                                 } else {
                                     return (
@@ -255,6 +343,7 @@ export default function CreateNote({ navigation, route }) {
                             showsVerticalScrollIndicator={false}
                             scrollEnabled={false}
                         />
+
 
                     </View>
 
@@ -282,7 +371,37 @@ export default function CreateNote({ navigation, route }) {
 
                     </View>
 
+                    {/* Sesli Not Modalı */}
+                    <Modal
+                        visible={showVoiceNote}
+                        animationType="slide"
+                        transparent={true}
+                        onRequestClose={() => setShowVoiceNote(false)}
+                    >
+                        <View style={styles.voiceModalOverlay}>
+                            <View style={styles.voiceModalContent}>
+                                {/* Close Button */}
+                                <TouchableOpacity
+                                    style={styles.voiceModalCloseButton}
+                                    onPress={() => setShowVoiceNote(false)}
+                                >
+                                    <Icon name="close" size={30} color="#fff" />
+                                </TouchableOpacity>
+
+                                {/* VoiceNote Component */}
+                                <VoiceNote
+                                    onCancel={() => setShowVoiceNote(false)}
+                                    onVoiceRecorded={onAudioSave}
+                                />
+                            </View>
+                        </View>
+                    </Modal>
+
+
+
                     <StatusBar style="light" hidden={false} />
+
+
                 </View>
             </ImageBackground>
         </Provider>
@@ -449,5 +568,46 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderWidth: 1,
         borderColor: '#00000033',
-    }
+    },
+
+
+    voiceNote: {
+        backgroundColor: '#ffffff',
+        paddingVertical: 8,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+
+    },
+    voiceModalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    voiceModalContent: {
+        width: '80%',
+        height: 200,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 12,
+        position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        borderRadius: 16,
+        elevation: 5,
+    },
+    voiceModalCloseButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        padding: 2,
+        margin: 4,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 16,
+        zIndex: 1,
+    },
 });
+
