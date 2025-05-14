@@ -124,7 +124,17 @@ export default function CreateNote({ navigation, route }) {
         }
     };
 
-    const onAudioSave = (uri, title) => {
+    const deleteImage = (index) => {
+        const newBlocks = [...contentBlocks];
+        newBlocks.splice(index, 1);
+        setContentBlocks(newBlocks)
+
+        if (newBlocks[0].type == 'text' && newBlocks[0].content == ' ') {
+            newBlocks[0].content = ''
+        }
+    }
+
+    const onAudioSave = ({ uri, duration }) => {
         setAudioUri(uri);
         setShowVoiceNote(false);
 
@@ -132,7 +142,7 @@ export default function CreateNote({ navigation, route }) {
         if (newBlocks[0].type == 'text' && newBlocks[0].content == ' ') {
             newBlocks[0].content = ' ';
         }
-        newBlocks.push({ type: 'audio', content: uri, title: title || 'Voice Note' });
+        newBlocks.push({ type: 'audio', content: uri, title: 'Voice Note', duration: duration });
         newBlocks.push({ type: 'text', content: ' ' });
         setContentBlocks(newBlocks);
     };
@@ -167,7 +177,6 @@ export default function CreateNote({ navigation, route }) {
         }
 
     };
-
 
 
 
@@ -279,39 +288,26 @@ export default function CreateNote({ navigation, route }) {
                             data={contentBlocks}
                             keyExtractor={(_, index) => index.toString()}
                             renderItem={({ item, index }) => {
-                                console.log(item)
                                 if (item.type === 'image') {
                                     return (
-                                        <Image
-                                            source={{ uri: item.content }}
-                                            style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
-                                            resizeMode="cover"
-                                        />
-                                    );
-                                } else if (item.type === 'audio') {
-                                    return (
-                                        <View style={{ marginVertical: 16, }}>
-                                            <Text style={{ color: fontColor, fontSize: 16, marginBottom: 10 }}>
-                                                🎤 {item.title}:
-                                            </Text>
+                                        <View>
+                                            <Image
+                                                source={{ uri: item.content }}
+                                                style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
+                                                resizeMode="cover"
+                                            />
                                             <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
                                                 <TouchableOpacity
-                                                    onPress={() => {
-                                                        if (!sound) {
-                                                            playAudio(item.content);
-                                                        } else {
-                                                            stopAudio();
-                                                        }
-                                                    }}
-                                                    style={[styles.voiceNote, { width: '75%' }]}
+                                                    onPress={() => { }}
+                                                    style={[styles.voiceNote, { width: '77.5%' }]}
                                                 >
                                                     <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
-                                                        {sound ? 'Stop' : 'Play'}
+                                                        Something
                                                     </Text>
                                                 </TouchableOpacity>
 
                                                 <TouchableOpacity
-                                                    onPress={() => deleteAudio(index)}
+                                                    onPress={() => deleteImage(index)}
                                                     style={[styles.voiceNote, { backgroundColor: '#505050', width: '20%' }]}
                                                 >
                                                     <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
@@ -319,6 +315,51 @@ export default function CreateNote({ navigation, route }) {
                                                     </Text>
                                                 </TouchableOpacity>
                                             </View>
+                                        </View>
+
+                                    );
+                                } else if (item.type === 'audio') {
+                                    return (
+                                        <View style={{ marginVertical: 16, }}>
+                                            <Text style={{ color: fontColor, fontSize: 16, marginBottom: 10 }}>
+                                                🎙️  {item.title}:
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                <View
+                                                    style={{
+                                                        flexDirection: 'row',
+                                                        backgroundColor: '#ffffff',
+                                                        borderRadius: 12,
+                                                        overflow: 'hidden',
+                                                        width: '100%',
+                                                    }}
+                                                >
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            if (!sound) {
+                                                                playAudio(item.content);
+                                                            } else {
+                                                                stopAudio();
+                                                            }
+                                                        }}
+                                                        style={[styles.voiceNote, { width: '80%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                    >
+                                                        <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
+                                                            {sound ? '■      ' + item.duration : '➤      ' + item.duration}
+                                                        </Text>
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity
+                                                        onPress={() => deleteAudio(index)}
+                                                        style={[styles.voiceNote, { width: '20%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                    >
+                                                        <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
+                                                            🗑️
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+
                                         </View>
                                     );
                                 } else {
@@ -376,31 +417,26 @@ export default function CreateNote({ navigation, route }) {
                         visible={showVoiceNote}
                         animationType="slide"
                         transparent={true}
-                        onRequestClose={() => setShowVoiceNote(false)}
+                        onRequestClose={() => {
+                            setShowVoiceNote(false)
+                            onAudioSave()
+                        }}
                     >
                         <View style={styles.voiceModalOverlay}>
                             <View style={styles.voiceModalContent}>
-                                {/* Close Button */}
-                                <TouchableOpacity
-                                    style={styles.voiceModalCloseButton}
-                                    onPress={() => setShowVoiceNote(false)}
-                                >
-                                    <Icon name="close" size={30} color="#fff" />
-                                </TouchableOpacity>
-
                                 {/* VoiceNote Component */}
                                 <VoiceNote
-                                    onCancel={() => setShowVoiceNote(false)}
+                                    onCancel={() => {
+                                        setShowVoiceNote(false)
+                                        onAudioSave()
+                                    }}
                                     onVoiceRecorded={onAudioSave}
                                 />
                             </View>
                         </View>
                     </Modal>
 
-
-
                     <StatusBar style="light" hidden={false} />
-
 
                 </View>
             </ImageBackground>
@@ -587,27 +623,13 @@ const styles = StyleSheet.create({
     },
     voiceModalContent: {
         width: '80%',
-        height: 200,
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 12,
+        backgroundColor: '#505050',
+        padding: 16,
+        borderRadius: 16,
         position: 'relative',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
-        shadowRadius: 4,
-        borderRadius: 16,
         elevation: 5,
-    },
-    voiceModalCloseButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        padding: 2,
-        margin: 4,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        borderRadius: 16,
-        zIndex: 1,
     },
 });
 
