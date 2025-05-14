@@ -10,6 +10,7 @@ import VoiceNote from '../components/voice_note'
 import themes from "../theme";
 import StylingModal from "../components/styling_modal";
 
+import DrawingCanvas from "../components/drawing_canvas";
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -37,6 +38,11 @@ export default function CreateNote({ navigation, route }) {
     const [audioUri, setAudioUri] = useState(null);
     const [sound, setSound] = useState(null);
     const [showVoiceNote, setShowVoiceNote] = useState(false);
+    const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
+
+    const [imageModalVisible, setImageModalVisible] = useState(false);
+    const [imageToZoom, setImageToZoom] = useState(null);
+
 
     const applyTheme = (theme) => {
         setBgColor(theme.primaryColor);
@@ -179,12 +185,24 @@ export default function CreateNote({ navigation, route }) {
     };
 
 
+    const onDrawingSave = (uri) => {
+        const newBlocks = [...contentBlocks];
+        if (newBlocks[0].type == 'text' && newBlocks[0].content == ' ') {
+            newBlocks[0].content = ' ';
+        }
+        console.log(uri)
+        newBlocks.push({ type: 'drawing', content: uri });
+        newBlocks.push({ type: 'text', content: ' ' });
+        setContentBlocks(newBlocks);
+    }
+
+
 
 
     const BNB_DATA = [
         { id: "1", icon: 'record-voice-over', onPress: () => setShowVoiceNote(true) },
         { id: "2", icon: 'image', onPress: addImage },
-        { id: "3", icon: 'brush', onPress: () => console.log("Open Drawing Canvas") },
+        { id: "3", icon: 'brush', onPress: () => setShowDrawingCanvas(true) },
         { id: "4", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
     ];
 
@@ -290,33 +308,57 @@ export default function CreateNote({ navigation, route }) {
                             renderItem={({ item, index }) => {
                                 if (item.type === 'image') {
                                     return (
-                                        <View>
+                                        <View style={{ marginBottom: 16 }}>
                                             <Image
                                                 source={{ uri: item.content }}
-                                                style={{ width: '100%', height: 200, marginBottom: 10, borderRadius: 8 }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: 200,
+                                                    borderRadius: 12,
+                                                    marginBottom: 10,
+                                                    borderWidth: 1,
+                                                    borderColor: '#ccc'
+                                                }}
                                                 resizeMode="cover"
                                             />
-                                            <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
+
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                backgroundColor: '#f2f2f2',
+                                                borderRadius: 12,
+                                                overflow: 'hidden'
+                                            }}>
                                                 <TouchableOpacity
-                                                    onPress={() => { }}
-                                                    style={[styles.voiceNote, { width: '77.5%' }]}
+                                                    onPress={() => {
+                                                        setImageToZoom(item.content)
+                                                        setImageModalVisible(true);
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: 12,
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                    }}
                                                 >
-                                                    <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
-                                                        Something
+                                                    <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>
+                                                        Görüntüle
                                                     </Text>
                                                 </TouchableOpacity>
 
                                                 <TouchableOpacity
                                                     onPress={() => deleteImage(index)}
-                                                    style={[styles.voiceNote, { backgroundColor: '#505050', width: '20%' }]}
+                                                    style={{
+                                                        width: 60,
+                                                        backgroundColor: '#e74c3c',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: 12
+                                                    }}
                                                 >
-                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-                                                        🗑️
-                                                    </Text>
+                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>🗑️</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
-
                                     );
                                 } else if (item.type === 'audio') {
                                     return (
@@ -345,7 +387,7 @@ export default function CreateNote({ navigation, route }) {
                                                         style={[styles.voiceNote, { width: '80%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
                                                     >
                                                         <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
-                                                            {sound ? '■      ' + item.duration : '➤      ' + item.duration}
+                                                            {sound ? '■  ' + item.duration : '➤  ' + item.duration}
                                                         </Text>
                                                     </TouchableOpacity>
 
@@ -353,13 +395,72 @@ export default function CreateNote({ navigation, route }) {
                                                         onPress={() => deleteAudio(index)}
                                                         style={[styles.voiceNote, { width: '20%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
                                                     >
-                                                        <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
-                                                            🗑️
-                                                        </Text>
+                                                        <Image
+                                                            source={require('../assets/trash_can_icon.png')}
+                                                            style={{ width: 20, height: 20 }}
+                                                            resizeMode="cover"
+                                                        />
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
 
+                                        </View>
+                                    );
+                                } else if (item.type === 'drawing') {
+                                    console.log(item.content)
+                                    return (
+                                        <View style={{ marginBottom: 16 }}>
+                                            <Image
+                                                source={{ uri: item.content }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: 200,
+                                                    borderRadius: 12,
+                                                    marginBottom: 10,
+                                                    borderWidth: 1,
+                                                    borderColor: '#ccc',
+                                                    backgroundColor: 'white'
+                                                }}
+                                                resizeMode="cover"
+                                            />
+
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                backgroundColor: '#f2f2f2',
+                                                borderRadius: 12,
+                                                overflow: 'hidden'
+                                            }}>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setImageToZoom(item.content)
+                                                        setImageModalVisible(true);
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: 12,
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                    }}
+                                                >
+                                                    <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>
+                                                        Görüntüle
+                                                    </Text>
+                                                </TouchableOpacity>
+
+
+                                                <TouchableOpacity
+                                                    onPress={() => deleteImage(index)}
+                                                    style={{
+                                                        width: 60,
+                                                        backgroundColor: '#e74c3c',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: 12
+                                                    }}
+                                                >
+                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>🗑️</Text>
+                                                </TouchableOpacity>
+                                            </View>
                                         </View>
                                     );
                                 } else {
@@ -412,7 +513,7 @@ export default function CreateNote({ navigation, route }) {
 
                     </View>
 
-                    {/* Sesli Not Modalı */}
+                    {/* Voice Note Modal */}
                     <Modal
                         visible={showVoiceNote}
                         animationType="slide"
@@ -436,11 +537,60 @@ export default function CreateNote({ navigation, route }) {
                         </View>
                     </Modal>
 
+                    {/* Drawing Modal */}
+                    <Modal
+                        visible={showDrawingCanvas}
+                        animationType="slide"
+                        transparent={true}
+                        onRequestClose={() => setShowDrawingCanvas(false)}
+                    >
+                        <View style={styles.drawingModalOverlay}>
+                            <View style={styles.drawingModalContent}>
+                                <DrawingCanvas
+                                    onSave={(base64Image) => {
+                                        onDrawingSave(base64Image)
+                                        setShowDrawingCanvas(false);
+                                    }}
+                                />
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/* General Modal to show images and drawings at fullscreen */}
+                    <Modal visible={imageModalVisible} transparent={true}>
+                        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)' }}>
+                            {/* Kapat Butonu */}
+                            <TouchableOpacity
+                                style={{
+                                    position: 'absolute',
+                                    top: 40,
+                                    right: 20,
+                                    zIndex: 10,
+                                    padding: 10,
+                                    backgroundColor: 'rgba(0,0,0,0.5)',
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => setImageModalVisible(false)}
+                            >
+                                <Text style={{ color: 'white', fontSize: 16 }}>Kapat</Text>
+                            </TouchableOpacity>
+
+                            {/* Resim */}
+                            <Image
+                                source={{ uri: imageToZoom }}
+                                style={{ flex: 1, resizeMode: 'contain', backgroundColor: 'white' }}
+                            />
+                        </View>
+                    </Modal>
+
+
+
+
                     <StatusBar style="light" hidden={false} />
 
                 </View>
-            </ImageBackground>
-        </Provider>
+            </ImageBackground >
+        </Provider >
     );
 }
 
@@ -630,6 +780,25 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         elevation: 5,
+    },
+
+    drawingModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    drawingModalContent: {
+        width: '95%',
+        height: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
     },
 });
 
