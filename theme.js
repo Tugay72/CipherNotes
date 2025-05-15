@@ -11,7 +11,7 @@ const themes = [
         primaryColor: "#f0f0f0",
         secondaryColor: "#000000",
         lowerOpacityText: "#4D90FE",
-        containerBg: "#f2f2f2"
+        containerBg: "#e3e3e3"
     },
     {
         name: "sunset",

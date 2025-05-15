@@ -11,6 +11,8 @@ import PasswordModal from './components/password_modal';
 
 const Stack = createStackNavigator();
 
+import { ThemeProvider } from './theme_context';
+
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [storedPassword, setStoredPassword] = useState(null);
@@ -48,24 +50,28 @@ export default function App() {
 
     if (!isAuthenticated) {
         return (
-            <View style={styles.container}>
-                <PasswordModal
-                    visible={true}
-                    onClose={() => { }}
-                    onConfirm={handlePasswordConfirm}
-                />
-            </View>
+            <ThemeProvider>
+                <View style={styles.container}>
+                    <PasswordModal
+                        visible={true}
+                        onClose={() => { }}
+                        onConfirm={handlePasswordConfirm}
+                    />
+                </View>
+            </ThemeProvider>
         );
     }
 
     return (
-        <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="Home" component={Home} />
-                <Stack.Screen name="CreateNote" component={CreateNote} />
-                <Stack.Screen name="Settings" component={Settings} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <ThemeProvider>
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="Home" component={Home} />
+                    <Stack.Screen name="CreateNote" component={CreateNote} />
+                    <Stack.Screen name="Settings" component={Settings} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </ThemeProvider>
     );
 }
 

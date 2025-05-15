@@ -4,7 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import NoteBox from '../components/note_box';
 
-import theme from '../theme';
+import { useTheme } from '../theme_context';
+
 
 export default function Home({ navigation }) {
     const [notesData, setNotesData] = useState([]);
@@ -13,6 +14,8 @@ export default function Home({ navigation }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const menuAnimation = useState(new Animated.Value(-250))[0];
+
+    const { currentTheme } = useTheme();
 
     useEffect(() => {
         loadNotes();
@@ -99,9 +102,6 @@ export default function Home({ navigation }) {
         console.log('NOTLAR KAYDEDİLDİ');
     };
 
-
-
-
     const onCreateNote = () => {
         navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID, deleteNoteByID });
     };
@@ -133,17 +133,45 @@ export default function Home({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[
+            styles.container,
+            {
+                backgroundColor: currentTheme.primaryColor
+
+            }
+        ]}>
+
             {/* Side Menu with animation */}
-            <Animated.View style={[styles.menu, { transform: [{ translateX: menuAnimation }] }]}>
-                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Settings')}>
-                    <Text style={styles.menuItemText}>Settings</Text>
-                </TouchableOpacity>
+            <Animated.View
+                style={[
+                    styles.menu,
+                    {
+                        transform: [{ translateX: menuAnimation }],
+                        backgroundColor: currentTheme.containerBg,
+                    }]}>
+
                 <TouchableOpacity style={styles.menuItem} onPress={closeMenu}>
-                    <Text style={styles.menuItemText}>Close Menu</Text>
+                    <Text
+                        style={[
+                            styles.menuItemText,
+                            {
+                                color:
+                                    currentTheme.secondaryColor,
+                                fontSize: 32,
+
+                            }
+                        ]}>☰</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
-                    <Text style={styles.buttonText}>☾</Text>
+
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => navigation.navigate('Settings')}>
+                    <Text style={[
+                        styles.menuItemText,
+                        {
+                            color: currentTheme.secondaryColor
+                        }
+                    ]}>Settings</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -154,26 +182,42 @@ export default function Home({ navigation }) {
             )}
 
             {/* Top Navigation */}
-            <View style={styles.topNavContainer}>
-                <View style={styles.searchBar}>
+            <View style={[
+                styles.topNavContainer,
+                {
+                    backgroundColor:
+                        currentTheme.primaryColor
+                }
+            ]}>
+
+                <View style={[
+                    styles.searchBar,
+                    {
+                        backgroundColor: currentTheme.containerBg
+                    }
+                ]}>
                     <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-                        <Text style={styles.buttonText}>☰</Text>
+                        <Text style={[
+                            styles.buttonText,
+                            {
+                                color: currentTheme.secondaryColor
+                            }
+                        ]}>☰</Text>
                     </TouchableOpacity>
 
                     <TextInput
                         style={{
-                            color: theme[0].secondaryColor,
+                            color: currentTheme.secondaryColor,
+                            flex: 1,
                         }}
                         placeholder="Search notes..."
-                        placeholderTextColor={theme[0].secondaryColor}
+                        placeholderTextColor={currentTheme.secondaryColor}
                         numberOfLines={1}
                         value={searchText}
                         onChangeText={setSearchText}
                         onBlur={handleSearchBlur}
                     />
                 </View>
-
-
             </View>
 
             {/* Notes */}
@@ -194,17 +238,27 @@ export default function Home({ navigation }) {
             />
 
             {/* Create new note */}
-            <TouchableOpacity style={styles.createNoteButton} onPress={onCreateNote}>
-                <Text style={styles.buttonText}>+</Text>
+            <TouchableOpacity style={[
+                styles.createNoteButton,
+                {
+                    backgroundColor: currentTheme.lowerOpacityText
+                }
+            ]} onPress={onCreateNote}>
+                <Text style={[
+                    styles.buttonText,
+                    {
+                        color: currentTheme.secondaryColor
+                    }
+                ]}>+</Text>
             </TouchableOpacity>
 
-            <StatusBar style="light" hidden={false} />
+            <StatusBar style={currentTheme.name === 'dark' ? "light" : "dark"} hidden={false} />
         </View>
     );
+
 }
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#000000',
         paddingTop: 16,
         flex: 1,
     },
@@ -215,16 +269,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        backgroundColor: 'black',
     },
     searchBar: {
         flex: 1,
         height: 48,
         width: '100%',
-        display: 'flex',
         flexDirection: 'row',
-        backgroundColor: '#1a1a1a',
-        color: theme[0].secondaryColor,
         paddingLeft: 12,
         borderRadius: 8,
     },
@@ -245,50 +295,47 @@ const styles = StyleSheet.create({
         bottom: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme[0].lowerOpacityText,
         borderRadius: 50,
     },
     buttonText: {
-        color: theme[0].secondaryColor,
         fontSize: 32,
-        fontWeight: 'bold',
-    },
-    tinyLogo: {
-        width: 24,
-        height: 24,
     },
     menu: {
         flex: 1,
         zIndex: 10,
         position: 'absolute',
-        top: 0,
+        top: 44,
         left: 0,
-        width: 200,
-        height: '120%',
-        backgroundColor: theme[0].primaryColor,
-        paddingTop: 60,
-        paddingLeft: 20,
+        width: 144,
+        height: '100%',
+        paddingLeft: 24,
+        backgroundColor: 'rgba(30, 30, 30, 0.95)',
+        borderTopRightRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 4, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 10,
     },
+
     menuItem: {
         paddingVertical: 15,
         paddingHorizontal: 10,
     },
     menuItemText: {
-        color: theme[0].secondaryColor,
         fontSize: 18,
     },
     menuButton: {
         marginRight: 16,
     },
-
     overlay: {
         position: 'absolute',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundColor: 'transparent', // Gerekirse yarı saydam yapabilirsin
-        zIndex: 5, // Menüden düşük ama içerikten yüksek olmalı
+        backgroundColor: 'transparent',
+        zIndex: 5,
     },
-
 });

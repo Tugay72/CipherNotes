@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { Audio } from 'expo-av';
-
+import { useTheme } from '../theme_context';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from 'expo-image-picker';
 import VoiceNote from '../components/voice_note'
 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import themes from "../theme";
 import StylingModal from "../components/styling_modal";
 
@@ -42,6 +43,17 @@ export default function CreateNote({ navigation, route }) {
 
     const [imageModalVisible, setImageModalVisible] = useState(false);
     const [imageToZoom, setImageToZoom] = useState(null);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const { currentTheme } = useTheme();
+
+    useEffect(() => {
+        if (selectedTheme == null) {
+            applyTheme(currentTheme);
+        }
+    }, [selectedTheme]);
+
 
 
     const applyTheme = (theme) => {
@@ -236,45 +248,48 @@ export default function CreateNote({ navigation, route }) {
                     {/* Top Navigation */}
                     <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
                         <TouchableOpacity onPress={goBack}>
-                            <Icon style={[
-                                styles.buttonText,
-                                {
-                                    paddingHorizontal: 4,
-                                    paddingVertical: 14,
-                                    color: fontColor,
-                                    fontSize: 24,
-                                    fontWeight: 900
-                                }]} name="arrow-back-ios-new" />
+                            <MaterialCommunityIcons
+                                style={
+                                    {
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 12,
+                                        color: fontColor,
+                                        fontSize: 24,
+
+                                    }}
+                                name="arrow-left-thick" size={24} color="#333" />
                         </TouchableOpacity>
 
                         {editing ? (
                             <TouchableOpacity onPress={onSaveInput}>
-                                <Text style={[styles.buttonText, { paddingHorizontal: 8, color: fontColor }]}>✔</Text>
+                                <Text style={[
+                                    styles.buttonText,
+                                    {
+                                        paddingTop: 4,
+                                        paddingHorizontal: 8,
+                                        color: fontColor
+                                    }]}>✔</Text>
                             </TouchableOpacity>
                         ) : (
-                            <TouchableOpacity onPress={openMenu}>
-                                <Menu
-                                    visible={visible}
-                                    onDismiss={closeMenu}
-                                    anchor={
-                                        <TouchableOpacity onPress={openMenu}>
-                                            <Text style={[styles.textInput, { fontSize: 32, paddingHorizontal: 8, color: fontColor }]}>⋮</Text>
-                                        </TouchableOpacity>
-                                    }
-                                >
-                                    <Menu.Item onPress={() => { console.log('Option 1 pressed'); closeMenu(); }} title="Add password" />
-                                    <Menu.Item
-                                        onPress={() => {
-                                            closeMenu();
-                                            setStylizeVisible(true);
-                                        }}
-                                        title="Stylize"
-                                    />
+                            <View
+                                style={{
+                                    padding: 16,
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-end',
+                                    gap: 24
+                                }}>
+                                <TouchableOpacity onPress={() => console.log('Add password')}>
+                                    <MaterialCommunityIcons name="lock-outline" size={24} color="#333" />
+                                </TouchableOpacity>
 
-                                    <Divider />
-                                    <Menu.Item onPress={() => { onDeleteInput(); closeMenu(); }} title="Delete" />
-                                </Menu>
-                            </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setStylizeVisible(true)}>
+                                    <MaterialCommunityIcons name="palette-outline" size={24} color="#333" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
+                                    <MaterialCommunityIcons name="delete-outline" size={24} color="#d32f2f" />
+                                </TouchableOpacity>
+                            </View>
                         )}
                     </View>
 
@@ -469,7 +484,12 @@ export default function CreateNote({ navigation, route }) {
                                             multiline
                                             placeholder="Start typing..."
                                             placeholderTextColor={fontColor + 75}
-                                            style={[styles.textInput, { color: fontColor, fontSize: fontSize }]}
+                                            style={[
+                                                styles.textInput,
+                                                {
+                                                    color: fontColor, fontSize: fontSize
+                                                }
+                                            ]}
                                             value={item.content}
                                             onChangeText={(text) => {
                                                 const updatedBlocks = [...contentBlocks];
@@ -490,7 +510,14 @@ export default function CreateNote({ navigation, route }) {
                     </View>
 
                     {/* Bottom Navigation Bar */}
-                    <View style={[styles.bottomNavigationBar, { backgroundColor: 'black', paddingRight: 140 }]}>
+                    <View
+                        style={[
+                            styles.bottomNavigationBar,
+                            {
+                                backgroundColor: 'black',
+                                paddingRight: 140
+                            }
+                        ]}>
                         <FlatList
                             data={BNB_DATA}
                             horizontal
@@ -556,35 +583,75 @@ export default function CreateNote({ navigation, route }) {
                         </View>
                     </Modal>
 
-                    {/* General Modal to show images and drawings at fullscreen */}
-                    <Modal visible={imageModalVisible} transparent={true}>
-                        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)' }}>
-                            {/* Kapat Butonu */}
-                            <TouchableOpacity
-                                style={{
-                                    position: 'absolute',
-                                    top: 40,
-                                    right: 20,
-                                    zIndex: 10,
-                                    padding: 10,
-                                    backgroundColor: 'rgba(0,0,0,0.5)',
-                                    borderRadius: 10,
-                                }}
-                                onPress={() => setImageModalVisible(false)}
-                            >
-                                <Text style={{ color: 'white', fontSize: 16 }}>Kapat</Text>
-                            </TouchableOpacity>
+                    {/* Delete Note Modal */}
+                    <Modal
+                        visible={showDeleteModal}
+                        animationType="fade"
+                        transparent={true}
+                        onRequestClose={() => setShowDeleteModal(false)}
+                    >
+                        <View style={styles.deleteModalOverlay}>
+                            <View style={[styles.deleteModalContent, { backgroundColor: currentTheme.containerBg }]}>
+                                <Text style={[styles.deleteModalTitle, { color: currentTheme.secondaryColor }]}>Delete Note</Text>
+                                <Text style={[styles.deleteModalText, { color: '#ff5151' }]}>Are you sure you want to delete this note?</Text>
 
-                            {/* Resim */}
-                            <Image
-                                source={{ uri: imageToZoom }}
-                                style={{ flex: 1, resizeMode: 'contain', backgroundColor: 'white' }}
-                            />
+                                <View style={styles.deleteModalButtons}>
+                                    <TouchableOpacity
+                                        onPress={() => setShowDeleteModal(false)}
+                                        style={[styles.deleteModalButton, { backgroundColor: '#ccc' }]}
+                                    >
+                                        <Text style={styles.deleteModalButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            onDeleteInput();
+                                            setShowDeleteModal(false);
+                                        }}
+                                        style={[styles.deleteModalButton, { backgroundColor: '#d32f2f' }]}
+                                    >
+                                        <Text style={[styles.deleteModalButtonText, { color: '#fff' }]}>Delete</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
                         </View>
                     </Modal>
 
 
 
+
+                    {/* General Modal to show images and drawings at fullscreen */}
+                    <Modal visible={imageModalVisible} transparent={true}>
+                        <View
+                            style={{
+                                flex: 1,
+                                backgroundColor: 'rgba(0,0,0,0.9)'
+                            }}
+                        >
+                            {/* Kapat Butonu */}
+                            <TouchableOpacity
+                                style={styles.imageModalCloseButton}
+                                onPress={() => setImageModalVisible(false)}
+                            >
+                                <Text
+                                    style={{
+                                        color: 'white',
+                                        fontSize: 16
+                                    }}
+                                >Kapat</Text>
+                            </TouchableOpacity>
+
+                            {/* Resim */}
+                            <Image
+                                source={{ uri: imageToZoom }}
+                                style={{
+                                    flex: 1,
+                                    resizeMode: 'contain',
+                                    backgroundColor: 'white'
+                                }}
+                            />
+                        </View>
+                    </Modal>
 
                     <StatusBar style="light" hidden={false} />
 
@@ -609,12 +676,12 @@ const styles = StyleSheet.create({
         padding: 4,
         backgroundColor: 'black',
         position: 'absolute',
-        top: 32,
+        top: 48,
         left: 0,
     },
     content: {
         flex: 1,
-        marginTop: 48,
+        marginTop: 64,
         padding: 16,
         gap: 16
     },
@@ -800,5 +867,63 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 4 },
     },
+
+    imageModalCloseButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 10,
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 10,
+    },
+
+    deleteModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    deleteModalContent: {
+        backgroundColor: '#fff',
+        padding: 24,
+        borderRadius: 12,
+        width: '80%',
+        alignItems: 'center',
+    },
+
+    deleteModalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 12,
+    },
+
+    deleteModalText: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 24,
+        color: '#555',
+    },
+
+    deleteModalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+
+    deleteModalButton: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginHorizontal: 6,
+        alignItems: 'center',
+    },
+
+    deleteModalButtonText: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+
 });
 

@@ -1,16 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../theme_context';
 
-import theme from '../theme';
-
-export default function NoteBox({ route, note }) {
+export default function NoteBox({ note }) {
+    const { currentTheme } = useTheme();
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>{note.title}</Text>
-            <Text style={styles.text}>{note.text}</Text>
+        <View style={[styles.container, { backgroundColor: currentTheme.containerBg }]}>
+            <Text style={[styles.title, { color: currentTheme.lowerOpacityText }]}>{note.title}</Text>
+            <Text style={[styles.text, { color: currentTheme.secondaryColor }]}>{note.text}</Text>
         </View>
     );
+
+
 };
 
 const styles = StyleSheet.create({
@@ -19,18 +21,15 @@ const styles = StyleSheet.create({
         height: 172,
         padding: 16,
         borderRadius: 16,
-        backgroundColor: theme[0].containerBg,
         gap: 16,
     },
 
     title: {
-        color: theme[0].lowerOpacityText,
         fontSize: 16,
         fontWeight: 'bold',
     },
 
     text: {
         fontSize: 14,
-        color: theme[0].secondaryColor
     }
-})
+});

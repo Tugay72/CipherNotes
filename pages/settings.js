@@ -1,142 +1,189 @@
+import React from 'react';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Switch,
+    StyleSheet,
+    ScrollView,
+    Alert,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState, useEffect } from 'react';
+import { useTheme } from '../theme_context';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import theme from '../theme';
+import ChangePasswordModal from '../components/change_password';
 
-export default function Settings({ navigation }) {
-    const [oldPassword, setOldPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
 
-    useEffect(() => {
-        loadPassword();
-    }, []);
+// ... importlar aynı
 
-    const loadPassword = async () => {
+export default function SettingsScreen({ navigation }) {
+    const { currentTheme, toggleTheme, isDarkTheme } = useTheme();
+    const [isChangePasswordModalVisible, setChangePasswordModalVisible] = React.useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
+
+    const toggleNotifications = () => {
+        setNotificationsEnabled(!notificationsEnabled);
+    };
+
+    const clearData = async () => {
         try {
-            const storedPassword = await AsyncStorage.getItem('appPassword');
-            if (storedPassword) {
-                setCurrentPassword(storedPassword);
-            } else {
-                // Varsayılan şifre ayarla
-                await AsyncStorage.setItem('appPassword', '1234');
-                setCurrentPassword('1234');
-            }
+            await AsyncStorage.clear();
+            Alert.alert('Başarılı', 'Tüm veriler temizlendi.');
         } catch (e) {
-            console.error('Failed to load password:', e);
+            Alert.alert('Hata', 'Veriler temizlenemedi.');
         }
     };
 
-    const handleChangePassword = async () => {
-        if (oldPassword !== currentPassword) {
-            Alert.alert('Hatalı şifre', 'Mevcut şifrenizi yanlış girdiniz.');
-            return;
-        }
-
-        if (newPassword.length < 4) {
-            Alert.alert('Geçersiz şifre', 'Yeni şifre en az 4 karakter olmalı.');
-            return;
-        }
-
-        try {
-            await AsyncStorage.setItem('appPassword', newPassword);
-            setCurrentPassword(newPassword);
-            setOldPassword('');
-            setNewPassword('');
-            Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
-        } catch (e) {
-            Alert.alert('Hata', 'Şifre güncellenemedi.');
-        }
-    };
+    const styles = getStyles(currentTheme);
 
     return (
         <View style={styles.container}>
-            <View style={styles.topNavContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-                    <Text style={styles.buttonText}>☚</Text>
+            <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
+
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <MaterialIcons
+                        name="arrow-back-ios-new"
+                        style={styles.backIcon}
+                    />
                 </TouchableOpacity>
+
+                <Text style={styles.headerTitle}>Settings</Text>
             </View>
 
-            <View style={styles.content}>
-                <Text style={styles.text}>Change Password</Text>
+            <ScrollView contentContainerStyle={styles.content}>
+                {/* Account */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Account</Text>
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Current Password"
-                    placeholderTextColor="#777"
-                    secureTextEntry
-                    value={oldPassword}
-                    onChangeText={setOldPassword}
-                />
+                    <TouchableOpacity
+                        style={styles.option}
+                        onPress={() => setChangePasswordModalVisible(true)}
+                    >
+                        <Text style={styles.optionText}>Change Password</Text>
+                    </TouchableOpacity>
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="New Password"
-                    placeholderTextColor="#777"
-                    secureTextEntry
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                />
+                    <TouchableOpacity
+                        style={styles.option}
+                        onPress={() => Alert.alert('Signed Out', 'You have been logged out.')}
+                    >
+                        <Text style={styles.optionText}>Sign Out</Text>
+                    </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
-                    <Text style={styles.buttonLabel}>Update Password</Text>
-                </TouchableOpacity>
-            </View>
+                {/* App Settings */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>App Settings</Text>
 
-            <StatusBar style="auto" hidden={false} />
+                    <View style={styles.switchRow}>
+                        <Text style={styles.optionText}>Enable Notifications</Text>
+                        <Switch
+                            value={notificationsEnabled}
+                            onValueChange={toggleNotifications}
+                        />
+                    </View>
+
+                    <View style={styles.switchRow}>
+                        <Text style={styles.optionText}>Dark Theme</Text>
+                        <Switch
+                            value={isDarkTheme}
+                            onValueChange={toggleTheme}
+                        />
+                    </View>
+                </View>
+
+                {/* Storage */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Storage</Text>
+
+                    <TouchableOpacity
+                        style={styles.option}
+                        onPress={clearData}
+                    >
+                        <Text style={[styles.optionText, { color: 'red' }]}>
+                            Clear All Data
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* About */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>About</Text>
+                    <Text style={styles.optionText}>Version: 1.0.0</Text>
+                    <Text style={styles.optionText}>Developer: You 😎</Text>
+                </View>
+            </ScrollView>
+
+            <ChangePasswordModal
+                visible={isChangePasswordModalVisible}
+                onClose={() => setChangePasswordModalVisible(false)}
+            />
         </View>
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
-        backgroundColor: '#000',
-        paddingTop: 16,
         flex: 1,
+        backgroundColor: theme.primaryColor,
     },
-    topNavContainer: {
-        width: '100%',
+    header: {
         height: 72,
+        marginTop: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        backgroundColor: theme.primaryColor,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.containerBg,
+    },
+    backButton: {
+        paddingHorizontal: 4,
+        paddingVertical: 14,
+    },
+    backIcon: {
+        color: theme.secondaryColor,
+        fontSize: 24,
+        fontWeight: '900',
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: theme.secondaryColor,
+        marginLeft: 8,
+    },
+    content: {
+        padding: 16,
+        gap: 32,
+    },
+    section: {
+        backgroundColor: theme.containerBg,
+        padding: 16,
+        borderRadius: 12,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: theme.secondaryColor,
+        marginBottom: 12,
+    },
+    option: {
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
+    },
+    optionText: {
+        color: theme.secondaryColor,
+        fontSize: 15,
+    },
+    switchRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
-        backgroundColor: 'black',
-    },
-    content: {
-        flex: 1,
-        marginTop: 48,
-        padding: 16,
-        gap: 16,
-    },
-    text: {
-        fontSize: 18,
-        color: theme.secondaryColor,
-        marginBottom: 8,
-        fontWeight: 'bold',
-    },
-    input: {
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        padding: 12,
-        borderRadius: 8,
-    },
-    button: {
-        backgroundColor: '#007bff',
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 16,
-    },
-    buttonLabel: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    buttonText: {
-        color: theme.secondaryColor,
-        fontSize: 32,
-        fontWeight: 'bold',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
     },
 });
