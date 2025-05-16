@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -14,6 +14,7 @@ import { useTheme } from '../theme_context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ChangePasswordModal from '../components/change_password';
+import DeleteModal from '../components/delete_modal';
 
 
 // ... importlar aynı
@@ -23,6 +24,8 @@ export default function SettingsScreen({ navigation }) {
     const [isChangePasswordModalVisible, setChangePasswordModalVisible] = React.useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const toggleNotifications = () => {
         setNotificationsEnabled(!notificationsEnabled);
     };
@@ -30,11 +33,14 @@ export default function SettingsScreen({ navigation }) {
     const clearData = async () => {
         try {
             await AsyncStorage.clear();
-            Alert.alert('Başarılı', 'Tüm veriler temizlendi.');
         } catch (e) {
             Alert.alert('Hata', 'Veriler temizlenemedi.');
         }
     };
+
+    const onDeleteInput = async () => {
+        clearData()
+    }
 
     const styles = getStyles(currentTheme);
 
@@ -100,7 +106,7 @@ export default function SettingsScreen({ navigation }) {
 
                     <TouchableOpacity
                         style={styles.option}
-                        onPress={clearData}
+                        onPress={() => setShowDeleteModal(true)}
                     >
                         <Text style={[styles.optionText, { color: 'red' }]}>
                             Clear All Data
@@ -111,8 +117,8 @@ export default function SettingsScreen({ navigation }) {
                 {/* About */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>About</Text>
-                    <Text style={styles.optionText}>Version: 1.0.0</Text>
-                    <Text style={styles.optionText}>Developer: You 😎</Text>
+                    <Text style={styles.optionText}>Version: v0.6</Text>
+                    <Text style={styles.optionText}>Developer: @</Text>
                 </View>
             </ScrollView>
 
@@ -120,6 +126,15 @@ export default function SettingsScreen({ navigation }) {
                 visible={isChangePasswordModalVisible}
                 onClose={() => setChangePasswordModalVisible(false)}
             />
+
+            {/* Delete Note Modal */}
+            <DeleteModal
+                showDeleteModal={showDeleteModal}
+                setShowDeleteModal={setShowDeleteModal}
+                currentTheme={currentTheme}
+                onDeleteInput={onDeleteInput}
+                message={'Are you sure you want to clear all data!'}
+            ></DeleteModal>
         </View>
     );
 }
@@ -132,6 +147,7 @@ const getStyles = (theme) => StyleSheet.create({
     header: {
         height: 72,
         marginTop: 16,
+        paddingTop: 16,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,

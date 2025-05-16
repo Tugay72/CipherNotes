@@ -3,7 +3,7 @@ import {
     StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../theme_context'; // tema context'i kullanalım
+import { useTheme } from '../theme_context';
 
 export default function ChangePasswordModal({ visible, onClose }) {
     const { currentTheme } = useTheme();
@@ -36,9 +36,12 @@ export default function ChangePasswordModal({ visible, onClose }) {
             return;
         }
 
-        if (newPassword.length < 4) {
-            Alert.alert('Geçersiz şifre', 'Yeni şifre en az 4 karakter olmalı.');
-            return;
+        if (newPassword.length == 0) {
+            setCurrentPassword(null);
+            setOldPassword('');
+            setNewPassword('');
+            Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
+            onClose();
         }
 
         try {
@@ -47,7 +50,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
             setOldPassword('');
             setNewPassword('');
             Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
-            onClose(); // Modal kapat
+            onClose();
         } catch (e) {
             Alert.alert('Hata', 'Şifre güncellenemedi.');
         }
@@ -65,14 +68,15 @@ export default function ChangePasswordModal({ visible, onClose }) {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
                     <View style={styles.topNavContainer}>
-                        <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <Text style={styles.title}>Change Password</Text>
+                        <TouchableOpacity onPress={onClose}>
                             <Text style={styles.buttonText}>✕</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={styles.content}>
-                        <Text style={styles.title}>Change Password</Text>
 
+                        <Text style={{ color: '#ffffff50', marginBottom: 8, marginLeft: 4 }}>Şifreyi kaldırmak için yeni şifre girme!</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Current Password"
@@ -114,7 +118,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: '90%',
         backgroundColor: theme.containerBg,
         borderRadius: 16,
-        paddingVertical: 24,
+        paddingVertical: 16,
         paddingHorizontal: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -124,11 +128,10 @@ const getStyles = (theme) => StyleSheet.create({
     },
     topNavContainer: {
         width: '100%',
-        height: 48,
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 24,
     },
     buttonText: {
         color: theme.secondaryColor,
@@ -142,7 +145,6 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: theme.secondaryColor,
-        marginBottom: 16,
     },
     input: {
         backgroundColor: theme.primaryColor,
@@ -151,7 +153,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 8,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: theme.secondaryColor + '44', // hafif transparan border
+        borderColor: theme.secondaryColor + '44',
     },
     button: {
         backgroundColor: theme.secondaryColor,
