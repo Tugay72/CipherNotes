@@ -13,6 +13,7 @@ const decrypt = (cipherText) => {
 
 
 export const saveNote = async (id, noteData, time, date) => {
+    console.log("Kaydedilecek veri:", JSON.stringify(noteData, null, 2));
     try {
         const noteWithMetadata = {
             ...noteData,

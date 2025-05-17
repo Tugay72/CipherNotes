@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import { useTheme } from '../theme_context';
@@ -22,9 +22,16 @@ export default function CreateNote({ navigation, route }) {
 
     const [visible, setVisible] = useState(false);
     const [title, setTitle] = useState(route.params?.title || '');
-    const [contentBlocks, setContentBlocks] = useState([
-        { type: 'text', content: route.params?.text || '' }
-    ]);
+    const [contentBlocks, setContentBlocks] = useState(() => {
+        try {
+            return route.params?.content
+                ? JSON.parse(route.params.content)
+                : [{ type: 'text', content: '' }];
+        } catch (e) {
+            return [{ type: 'text', content: '' }];
+        }
+    });
+
     const [time, setTime] = useState(route.params?.time || '');
     const [date, setDate] = useState(route.params?.date || '');
     const [editing, setEditing] = useState(false);
@@ -56,6 +63,36 @@ export default function CreateNote({ navigation, route }) {
     }, [selectedTheme]);
 
 
+    // Merge text blocks
+    useEffect(() => {
+        if (!contentBlocks || contentBlocks.length === 0) return;
+
+        const mergedBlocks = [];
+        let i = 0;
+        while (i < contentBlocks.length) {
+            const currentBlock = contentBlocks[i];
+
+            if (
+                currentBlock.type === 'text' &&
+                i + 1 < contentBlocks.length &&
+                contentBlocks[i + 1].type === 'text'
+            ) {
+                const mergedText = currentBlock.content + contentBlocks[i + 1].content;
+                mergedBlocks.push({ ...currentBlock, content: mergedText });
+                i += 2;
+            } else {
+                mergedBlocks.push(currentBlock);
+                i += 1;
+            }
+        }
+
+        const isEqual = JSON.stringify(mergedBlocks) === JSON.stringify(contentBlocks);
+        if (!isEqual) {
+            setContentBlocks(mergedBlocks);
+        }
+    }, [contentBlocks]);
+
+
 
     const applyTheme = (theme) => {
         setBgColor(theme.primaryColor);
@@ -85,12 +122,8 @@ export default function CreateNote({ navigation, route }) {
         setTime(formattedTime);
         setDate(formattedDate);
 
-        const finalText = contentBlocks
-            .filter(b => b.type === 'text')
-            .map(b => b.content)
-            .join('\n');
-
-        saveNoteByID(id, title, finalText, formattedTime, formattedDate);
+        const contentJSON = JSON.stringify(contentBlocks);
+        saveNoteByID(id, title, contentJSON, formattedTime, formattedDate);
         Keyboard.dismiss();
     };
 
@@ -132,7 +165,7 @@ export default function CreateNote({ navigation, route }) {
         if (!result.canceled && result.assets?.length > 0) {
             const newUri = result.assets[0].uri;
             const newBlocks = [...contentBlocks];
-            if (newBlocks[0]?.type === 'text') {
+            if (newBlocks[0]?.type === 'text' && newBlocks[0]?.content == '') {
                 newBlocks[0].content = ' ';
             }
 
@@ -216,11 +249,12 @@ export default function CreateNote({ navigation, route }) {
         { id: "1", icon: 'record-voice-over', onPress: () => setShowVoiceNote(true) },
         { id: "2", icon: 'image', onPress: addImage },
         { id: "3", icon: 'brush', onPress: () => setShowDrawingCanvas(true) },
-        { id: "4", icon: 'document-scanner', onPress: () => console.log("Open Document Scanner") },
+        { id: "4", icon: 'document-scanner', onPress: () => setShowDocumentReadingModal(true) },
     ];
 
     return (
         <Provider>
+
             <StylingModal
                 stylizeVisible={stylizeVisible}
                 setStylizeVisible={setStylizeVisible}

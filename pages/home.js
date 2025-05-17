@@ -20,7 +20,6 @@ export default function Home({ navigation }) {
     useEffect(() => {
         loadNotes();
 
-        // Geri tuşuna basıldığında menüyü kapat
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (isMenuOpen) {
                 closeMenu();
@@ -73,27 +72,28 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Title', text = 'Text', time = '/', date = '/') => {
+    const saveNoteByID = async (id, title = 'Title', content = 'Text', time = '/', date = '/') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
-
         if (title == '' || title == null) {
             title = 'Title'
         }
 
-        if (text == '' || text == null) {
-            text = 'Text'
+        if (content == '' || content == null) {
+            content = 'Text'
         }
+        const newNote = { id, title, content, time, date };
 
         if (index !== -1) {
-            updatedNotes[index] = { id, title, text, time, date };
+            updatedNotes[index] = newNote;
         } else {
             const newId = (Date.now()).toString();
-            updatedNotes.push({ id: newId, title, text, time, date });
+            updatedNotes.push({ ...newNote, id: newId });
         }
 
         await saveNotes(updatedNotes);
     };
+
 
     const deleteNoteByID = async (id) => {
         const updatedNotes = notesData.filter(note => note.id !== id);
@@ -103,7 +103,7 @@ export default function Home({ navigation }) {
     };
 
     const onCreateNote = () => {
-        navigation.navigate('CreateNote', { id: null, title: '', text: '', time: '', date: '', saveNoteByID, deleteNoteByID });
+        navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', saveNoteByID, deleteNoteByID });
     };
 
     const toggleMenu = () => {
@@ -228,7 +228,7 @@ export default function Home({ navigation }) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.noteItem}
-                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, text: item.text, time: item.time, date: item.date, saveNoteByID, deleteNoteByID })}
+                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, content: item.content, time: item.time, date: item.date, saveNoteByID, deleteNoteByID })}
                     >
                         <NoteBox note={item} />
                     </TouchableOpacity>

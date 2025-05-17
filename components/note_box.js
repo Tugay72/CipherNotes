@@ -4,16 +4,22 @@ import { useTheme } from '../theme_context';
 
 export default function NoteBox({ note }) {
     const { currentTheme } = useTheme();
+    console.log(note);
+
+    const contentBlocks = JSON.parse(note.content);
 
     return (
         <View style={[styles.container, { backgroundColor: currentTheme.containerBg }]}>
-            <Text style={[styles.title, { color: currentTheme.lowerOpacityText }]}>{note.title}</Text>
-            <Text style={[styles.text, { color: currentTheme.secondaryColor }]}>{note.text}</Text>
+            <Text style={[styles.title, { color: currentTheme.lowerOpacityText }]}>
+                {note.title}
+            </Text>
+            <Text style={[styles.text, { color: currentTheme.secondaryColor }]}>
+                {contentBlocks.length > 0 ? contentBlocks[0].content : ''}
+            </Text>
         </View>
     );
+}
 
-
-};
 
 const styles = StyleSheet.create({
     container: {
