@@ -4,15 +4,13 @@ import { useTheme } from '../theme_context';
 
 export default function ToDoBox({ toDo }) {
     const { currentTheme } = useTheme();
-    const contentBlocks = toDo.contentJSON || [];
+
+    const savedTheme = toDo.theme
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.containerBg }]}>
-            <Text style={[styles.title, { color: currentTheme.titleColor }]}>
+        <View style={[styles.container, { backgroundColor: savedTheme?.containerBg ?? currentTheme.containerBg }]}>
+            <Text style={[styles.title, { color: savedTheme?.titleColor ?? currentTheme.titleColor }]}>
                 {toDo.title}
-            </Text>
-            <Text style={[styles.text, { color: currentTheme.secondaryColor }]}>
-                {contentBlocks.length > 0 ? contentBlocks[0].content || '' : ''}
             </Text>
         </View>
     );
@@ -22,8 +20,8 @@ export default function ToDoBox({ toDo }) {
 
 const styles = StyleSheet.create({
     container: {
-        width: 172,
-        height: 172,
+        width: 360,
+        height: 56,
         padding: 16,
         borderRadius: 16,
         gap: 16,
@@ -33,8 +31,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-
-    text: {
-        fontSize: 14,
-    }
 });

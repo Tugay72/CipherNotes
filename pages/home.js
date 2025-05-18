@@ -6,7 +6,7 @@ import NoteBox from '../components/note_box';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { useTheme } from '../theme_context';
-import ToDoComponent from '../components/to-do';
+import ToDoComponent from './to-do';
 import ToDoBox from '../components/to_do_box';
 
 export default function Home({ navigation }) {
@@ -28,7 +28,6 @@ export default function Home({ navigation }) {
             setToDoData(todos);
             setFilteredTodos(todos);
         });
-        console.log(toDoData)
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (isMenuOpen) {
@@ -107,9 +106,7 @@ export default function Home({ navigation }) {
 
     const deleteNoteByID = async (id) => {
         const updatedNotes = notesData.filter(note => note.id !== id);
-        console.log('GÜNCELLENMİŞ NOTES:', updatedNotes);
         await saveNotes(updatedNotes);
-        console.log('NOTLAR KAYDEDİLDİ');
     };
 
     const onCreateNote = () => {
@@ -164,7 +161,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveToDoByID = async (id, contentJSON = [], title = 'Title') => {
+    const saveToDoByID = async (id, contentJSON = [], title = 'Title', theme = 'dark') => {
         let updatedToDos = [...toDoData];
         const index = updatedToDos.findIndex(todo => todo.id === id);
 
@@ -172,11 +169,13 @@ export default function Home({ navigation }) {
             title = 'Title';
         }
 
-        if (!Array.isArray(contentJSON)) {
-            contentJSON = [];
-        }
+        const newToDo = {
+            id,
+            title,
+            contentJSON: typeof contentJSON === 'string' ? contentJSON : JSON.stringify(contentJSON),
 
-        const newToDo = { id, title, contentJSON };
+            theme: theme
+        };
 
         if (index !== -1) {
             updatedToDos[index] = newToDo;
@@ -190,9 +189,7 @@ export default function Home({ navigation }) {
 
     const deleteToDoByID = async (id) => {
         const updatedToDos = toDoData.filter(todo => todo.id !== id);
-        console.log('GÜNCELLENMİŞ TODOS:', updatedToDos);
         await saveToDos(updatedToDos);
-        console.log('TODO KAYDEDİLDİ');
     };
 
     const filterTodos = () => {
@@ -211,12 +208,11 @@ export default function Home({ navigation }) {
             id: '',
             title: '',
             contentJSON: '',
+            theme: '',
             saveToDoByID,
             deleteToDoByID
         })
     }
-
-
 
     return (
         <View style={[
@@ -274,10 +270,12 @@ export default function Home({ navigation }) {
                     <MaterialCommunityIcons
                         style={
                             {
-                                paddingHorizontal: 8,
+                                paddingHorizontal: 12,
                                 paddingVertical: 12,
                                 color: currentTheme.secondaryColor,
                                 fontSize: 24,
+                                backgroundColor: section === 'notes' ? currentTheme.buttonBg : "transparent",
+                                borderRadius: 16,
 
                             }}
                         name="note-edit" size={24} color="#333" />
@@ -287,10 +285,12 @@ export default function Home({ navigation }) {
                     <MaterialCommunityIcons
                         style={
                             {
-                                paddingHorizontal: 8,
+                                paddingHorizontal: 12,
                                 paddingVertical: 12,
                                 color: currentTheme.secondaryColor,
                                 fontSize: 24,
+                                backgroundColor: section === 'to-do' ? currentTheme.buttonBg : "transparent",
+                                borderRadius: 16,
 
                             }}
                         name="timeline-check-outline" size={24} color="#333" />
@@ -300,10 +300,12 @@ export default function Home({ navigation }) {
                     <MaterialCommunityIcons
                         style={
                             {
-                                paddingHorizontal: 8,
+                                paddingHorizontal: 12,
                                 paddingVertical: 12,
                                 color: currentTheme.secondaryColor,
                                 fontSize: 24,
+                                backgroundColor: section === 'reminder' ? currentTheme.buttonBg : "transparent",
+                                borderRadius: 16,
 
                             }}
                         name="clock-alert" size={24} color="#333" />
@@ -352,6 +354,7 @@ export default function Home({ navigation }) {
 
 
                     <FlatList
+                        key='notes'
                         data={filteredNotes}
                         keyExtractor={(item) => item.id}
                         numColumns={2}
@@ -368,10 +371,11 @@ export default function Home({ navigation }) {
                     />
 
 
+
                     <TouchableOpacity style={[
                         styles.createNoteButton,
                         {
-                            backgroundColor: currentTheme.lowerOpacityText
+                            backgroundColor: currentTheme.buttonBg
                         }
                     ]} onPress={onCreateNote}>
                         <Text style={[
@@ -423,32 +427,34 @@ export default function Home({ navigation }) {
                     </View>
 
                     <FlatList
+                        key='todos'
                         data={filteredTodos}
                         keyExtractor={(item) => item.id}
-                        numColumns={2}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.noteItem}
-                                onPress={() => navigation.navigate('CreateToDo', {
-                                    id: item.id,
-                                    title: item.title,
-                                    content: item.contentJSON,
-                                    saveToDoByID,
-                                    deleteToDoByID
-                                })}
-                            >
-                                <ToDoBox toDo={item} />
-                            </TouchableOpacity>
-                        )}
+                        renderItem={({ item }) => {
+                            return (
+                                <TouchableOpacity
+                                    style={styles.noteItem}
+                                    onPress={() => navigation.navigate('CreateToDo', {
+                                        id: item.id,
+                                        title: item.title,
+                                        contentJSON: item.contentJSON,
+                                        theme: item.theme,
+                                        saveToDoByID,
+                                        deleteToDoByID
+                                    })}
+                                >
+                                    <ToDoBox toDo={item} />
+                                </TouchableOpacity>
+                            )
+                        }}
 
                         contentContainerStyle={styles.notes}
-                        columnWrapperStyle={styles.columnWrapper}
                     />
 
                     <TouchableOpacity style={[
                         styles.createNoteButton,
                         {
-                            backgroundColor: currentTheme.lowerOpacityText
+                            backgroundColor: currentTheme.buttonBg
                         }
                     ]} onPress={onCreateToDo}>
                         <Text style={[
@@ -508,6 +514,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         paddingBottom: 72,
         gap: 16,
+        height: '80%'
     },
     columnWrapper: {
         justifyContent: 'space-between',

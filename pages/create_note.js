@@ -59,8 +59,6 @@ export default function CreateNote({ navigation, route }) {
         }
     }, [selectedTheme]);
 
-    console.log(selectedTheme)
-
     // Merge text blocks
     useEffect(() => {
         if (!contentBlocks || contentBlocks.length === 0) return;
@@ -249,21 +247,6 @@ export default function CreateNote({ navigation, route }) {
     return (
         <Provider>
 
-            <StylingModal
-                stylizeVisible={stylizeVisible}
-                setStylizeVisible={setStylizeVisible}
-                fontSize={fontSize}
-                setFontSize={setFontSize}
-                bgImage={bgImage}
-                setBgImage={setBgImage}
-                bgColor={selectedTheme.primaryColor}
-                selectedTheme={selectedTheme}
-                setSelectedTheme={setSelectedTheme}
-                applyTheme={applyTheme}
-                themes={themes}>
-
-            </StylingModal>
-
 
             <ImageBackground
                 source={bgImage ? { uri: bgImage } : null}
@@ -382,7 +365,7 @@ export default function CreateNote({ navigation, route }) {
                                                         backgroundColor: selectedTheme.buttonBg,
                                                     }}
                                                 >
-                                                    <Text style={{ color: selectedTheme.secondaryColor, fontSize: 16, fontWeight: 'bold' }}>
+                                                    <Text style={{ color: selectedTheme.buttonText, fontSize: 16, fontWeight: 'bold' }}>
                                                         Görüntüle
                                                     </Text>
                                                 </TouchableOpacity>
@@ -569,6 +552,22 @@ export default function CreateNote({ navigation, route }) {
                         />
 
                     </View>
+
+                    {/* Styling Modal */}
+                    <StylingModal
+                        stylizeVisible={stylizeVisible}
+                        setStylizeVisible={setStylizeVisible}
+                        fontSize={fontSize}
+                        setFontSize={setFontSize}
+                        bgImage={bgImage}
+                        setBgImage={setBgImage}
+                        bgColor={selectedTheme.primaryColor}
+                        selectedTheme={selectedTheme}
+                        setSelectedTheme={setSelectedTheme}
+                        applyTheme={applyTheme}
+                        themes={themes}>
+
+                    </StylingModal>
 
                     {/* Voice Note Modal */}
                     <Modal

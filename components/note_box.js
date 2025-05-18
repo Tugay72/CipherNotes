@@ -5,8 +5,14 @@ import { useTheme } from '../theme_context';
 export default function NoteBox({ note }) {
     const { currentTheme } = useTheme();
 
-    const contentBlocks = JSON.parse(note.content);
-    const savedTheme = note.theme
+    let contentBlocks = [];
+    try {
+        contentBlocks = JSON.parse(note.content);
+    } catch (e) {
+        console.warn('Failed to parse note content JSON:', e);
+    }
+
+    const savedTheme = note.theme;
 
     return (
         <View style={[styles.container, { backgroundColor: savedTheme?.containerBg ?? currentTheme.containerBg }]}>
@@ -14,12 +20,11 @@ export default function NoteBox({ note }) {
                 {note.title}
             </Text>
             <Text style={[styles.text, { color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor }]}>
-                {contentBlocks.length > 0 ? contentBlocks[0].content : ''}
+                {Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : ''}
             </Text>
         </View>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
