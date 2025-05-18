@@ -4,16 +4,16 @@ import { useTheme } from '../theme_context';
 
 export default function NoteBox({ note }) {
     const { currentTheme } = useTheme();
-    console.log(note);
 
     const contentBlocks = JSON.parse(note.content);
+    const savedTheme = note.theme
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.containerBg }]}>
-            <Text style={[styles.title, { color: currentTheme.lowerOpacityText }]}>
+        <View style={[styles.container, { backgroundColor: savedTheme?.containerBg ?? currentTheme.containerBg }]}>
+            <Text style={[styles.title, { color: savedTheme?.titleColor ?? currentTheme.titleColor }]}>
                 {note.title}
             </Text>
-            <Text style={[styles.text, { color: currentTheme.secondaryColor }]}>
+            <Text style={[styles.text, { color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor }]}>
                 {contentBlocks.length > 0 ? contentBlocks[0].content : ''}
             </Text>
         </View>

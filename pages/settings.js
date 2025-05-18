@@ -152,8 +152,6 @@ const getStyles = (theme) => StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         backgroundColor: theme.primaryColor,
-        borderBottomWidth: 1,
-        borderBottomColor: theme.containerBg,
     },
     backButton: {
         paddingHorizontal: 4,
@@ -183,12 +181,10 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: theme.secondaryColor,
-        marginBottom: 12,
+        marginBottom: 16,
     },
     option: {
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
     },
     optionText: {
         color: theme.secondaryColor,
@@ -198,8 +194,7 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        paddingVertical: 4,
+
     },
 });

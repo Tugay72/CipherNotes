@@ -3,15 +3,20 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import NoteBox from '../components/note_box';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { useTheme } from '../theme_context';
-
+import ToDoComponent from '../components/to-do';
+import ToDoBox from '../components/to_do_box';
 
 export default function Home({ navigation }) {
     const [notesData, setNotesData] = useState([]);
+    const [toDoData, setToDoData] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [filteredNotes, setFilteredNotes] = useState([]);
+    const [filteredTodos, setFilteredTodos] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [section, setSection] = useState('notes');
 
     const menuAnimation = useState(new Animated.Value(-250))[0];
 
@@ -19,6 +24,11 @@ export default function Home({ navigation }) {
 
     useEffect(() => {
         loadNotes();
+        loadToDos().then(todos => {
+            setToDoData(todos);
+            setFilteredTodos(todos);
+        });
+        console.log(toDoData)
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (isMenuOpen) {
@@ -33,7 +43,8 @@ export default function Home({ navigation }) {
 
     useEffect(() => {
         filterNotes();
-    }, [searchText, notesData]);
+        filterTodos();
+    }, [searchText, notesData, toDoData]);
 
     const loadNotes = async () => {
         try {
@@ -72,7 +83,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Title', content = 'Text', time = '/', date = '/') => {
+    const saveNoteByID = async (id, title = 'Title', content = 'Text', time = '/', date = '/', theme = 'dark') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
         if (title == '' || title == null) {
@@ -82,7 +93,7 @@ export default function Home({ navigation }) {
         if (content == '' || content == null) {
             content = 'Text'
         }
-        const newNote = { id, title, content, time, date };
+        const newNote = { id, title, content, time, date, theme };
 
         if (index !== -1) {
             updatedNotes[index] = newNote;
@@ -94,7 +105,6 @@ export default function Home({ navigation }) {
         await saveNotes(updatedNotes);
     };
 
-
     const deleteNoteByID = async (id) => {
         const updatedNotes = notesData.filter(note => note.id !== id);
         console.log('GÜNCELLENMİŞ NOTES:', updatedNotes);
@@ -103,7 +113,7 @@ export default function Home({ navigation }) {
     };
 
     const onCreateNote = () => {
-        navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', saveNoteByID, deleteNoteByID });
+        navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', theme: '', saveNoteByID, deleteNoteByID });
     };
 
     const toggleMenu = () => {
@@ -131,6 +141,82 @@ export default function Home({ navigation }) {
             closeMenu();
         }
     };
+
+    const changeSection = (section) => {
+        setSection(section)
+    }
+
+    const saveToDos = async (toDos) => {
+        try {
+            await AsyncStorage.setItem('@my_todos', JSON.stringify(toDos));
+        } catch (e) {
+            console.error('ToDo kaydedilirken hata:', e);
+        }
+    };
+
+    const loadToDos = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('@my_todos');
+            return jsonValue != null ? JSON.parse(jsonValue) : [];
+        } catch (e) {
+            console.error('ToDo okunurken hata:', e);
+            return [];
+        }
+    };
+
+    const saveToDoByID = async (id, contentJSON = [], title = 'Title') => {
+        let updatedToDos = [...toDoData];
+        const index = updatedToDos.findIndex(todo => todo.id === id);
+
+        if (!title || title.trim() === '') {
+            title = 'Title';
+        }
+
+        if (!Array.isArray(contentJSON)) {
+            contentJSON = [];
+        }
+
+        const newToDo = { id, title, contentJSON };
+
+        if (index !== -1) {
+            updatedToDos[index] = newToDo;
+        } else {
+            const newId = Date.now().toString();
+            updatedToDos.push({ ...newToDo, id: newId });
+        }
+
+        await saveToDos(updatedToDos);
+    };
+
+    const deleteToDoByID = async (id) => {
+        const updatedToDos = toDoData.filter(todo => todo.id !== id);
+        console.log('GÜNCELLENMİŞ TODOS:', updatedToDos);
+        await saveToDos(updatedToDos);
+        console.log('TODO KAYDEDİLDİ');
+    };
+
+    const filterTodos = () => {
+        if (searchText === '') {
+            setFilteredTodos(toDoData);
+        } else {
+            const filtered = toDoData.filter(todo =>
+                todo.title.toLowerCase().includes(searchText.toLowerCase())
+            );
+            setFilteredTodos(filtered);
+        }
+    };
+
+    const onCreateToDo = () => {
+        navigation.navigate('CreateToDo', {
+            id: '',
+            title: '',
+            contentJSON: '',
+            saveToDoByID,
+            deleteToDoByID
+        })
+    }
+
+
 
     return (
         <View style={[
@@ -181,76 +267,206 @@ export default function Home({ navigation }) {
                 </TouchableWithoutFeedback>
             )}
 
-            {/* Top Navigation */}
-            <View style={[
-                styles.topNavContainer,
-                {
-                    backgroundColor:
-                        currentTheme.primaryColor
-                }
-            ]}>
 
-                <View style={[
-                    styles.searchBar,
-                    {
-                        backgroundColor: currentTheme.containerBg
-                    }
-                ]}>
-                    <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+            {/* Apps Section */}
+            <View style={styles.appsSection}>
+                <TouchableOpacity onPress={() => changeSection('notes')}>
+                    <MaterialCommunityIcons
+                        style={
+                            {
+                                paddingHorizontal: 8,
+                                paddingVertical: 12,
+                                color: currentTheme.secondaryColor,
+                                fontSize: 24,
+
+                            }}
+                        name="note-edit" size={24} color="#333" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => changeSection('to-do')}>
+                    <MaterialCommunityIcons
+                        style={
+                            {
+                                paddingHorizontal: 8,
+                                paddingVertical: 12,
+                                color: currentTheme.secondaryColor,
+                                fontSize: 24,
+
+                            }}
+                        name="timeline-check-outline" size={24} color="#333" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => changeSection('reminder')}>
+                    <MaterialCommunityIcons
+                        style={
+                            {
+                                paddingHorizontal: 8,
+                                paddingVertical: 12,
+                                color: currentTheme.secondaryColor,
+                                fontSize: 24,
+
+                            }}
+                        name="clock-alert" size={24} color="#333" />
+                </TouchableOpacity>
+            </View>
+
+            {section === 'notes' ? (
+                <View>
+                    <View style={[
+                        styles.topNavContainer,
+                        {
+                            backgroundColor:
+                                currentTheme.primaryColor
+                        }
+                    ]}>
+
+                        <View style={[
+                            styles.searchBar,
+                            {
+                                backgroundColor: currentTheme.containerBg
+                            }
+                        ]}>
+                            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                                <Text style={[
+                                    styles.buttonText,
+                                    {
+                                        color: currentTheme.secondaryColor
+                                    }
+                                ]}>☰</Text>
+                            </TouchableOpacity>
+
+                            <TextInput
+                                style={{
+                                    color: currentTheme.secondaryColor,
+                                    flex: 1,
+                                }}
+                                placeholder="Search notes..."
+                                placeholderTextColor={currentTheme.secondaryColor}
+                                numberOfLines={1}
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                onBlur={handleSearchBlur}
+                            />
+                        </View>
+                    </View>
+
+
+                    <FlatList
+                        data={filteredNotes}
+                        keyExtractor={(item) => item.id}
+                        numColumns={2}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.noteItem}
+                                onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, content: item.content, time: item.time, date: item.date, theme: item.theme, saveNoteByID, deleteNoteByID })}
+                            >
+                                <NoteBox note={item} />
+                            </TouchableOpacity>
+                        )}
+                        contentContainerStyle={styles.notes}
+                        columnWrapperStyle={styles.columnWrapper}
+                    />
+
+
+                    <TouchableOpacity style={[
+                        styles.createNoteButton,
+                        {
+                            backgroundColor: currentTheme.lowerOpacityText
+                        }
+                    ]} onPress={onCreateNote}>
                         <Text style={[
                             styles.buttonText,
                             {
                                 color: currentTheme.secondaryColor
                             }
-                        ]}>☰</Text>
+                        ]}>+</Text>
                     </TouchableOpacity>
-
-                    <TextInput
-                        style={{
-                            color: currentTheme.secondaryColor,
-                            flex: 1,
-                        }}
-                        placeholder="Search notes..."
-                        placeholderTextColor={currentTheme.secondaryColor}
-                        numberOfLines={1}
-                        value={searchText}
-                        onChangeText={setSearchText}
-                        onBlur={handleSearchBlur}
-                    />
                 </View>
-            </View>
+            ) : section === 'to-do' ? (
+                <View>
 
-            {/* Notes */}
-            <FlatList
-                data={filteredNotes}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.noteItem}
-                        onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, content: item.content, time: item.time, date: item.date, saveNoteByID, deleteNoteByID })}
-                    >
-                        <NoteBox note={item} />
+                    <View style={[
+                        styles.topNavContainer,
+                        {
+                            backgroundColor: currentTheme.primaryColor
+                        }
+                    ]}>
+
+                        <View style={[
+                            styles.searchBar,
+                            {
+                                backgroundColor: currentTheme.containerBg
+                            }
+                        ]}>
+                            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                                <Text style={[
+                                    styles.buttonText,
+                                    {
+                                        color: currentTheme.secondaryColor
+                                    }
+                                ]}>☰</Text>
+                            </TouchableOpacity>
+
+                            <TextInput
+                                style={{
+                                    color: currentTheme.secondaryColor,
+                                    flex: 1,
+                                }}
+                                placeholder="Search to-do..."
+                                placeholderTextColor={currentTheme.secondaryColor}
+                                numberOfLines={1}
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                onBlur={handleSearchBlur}
+                            />
+                        </View>
+                    </View>
+
+                    <FlatList
+                        data={filteredTodos}
+                        keyExtractor={(item) => item.id}
+                        numColumns={2}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.noteItem}
+                                onPress={() => navigation.navigate('CreateToDo', {
+                                    id: item.id,
+                                    title: item.title,
+                                    content: item.contentJSON,
+                                    saveToDoByID,
+                                    deleteToDoByID
+                                })}
+                            >
+                                <ToDoBox toDo={item} />
+                            </TouchableOpacity>
+                        )}
+
+                        contentContainerStyle={styles.notes}
+                        columnWrapperStyle={styles.columnWrapper}
+                    />
+
+                    <TouchableOpacity style={[
+                        styles.createNoteButton,
+                        {
+                            backgroundColor: currentTheme.lowerOpacityText
+                        }
+                    ]} onPress={onCreateToDo}>
+                        <Text style={[
+                            styles.buttonText,
+                            {
+                                color: currentTheme.secondaryColor
+                            }
+                        ]}>+</Text>
                     </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.notes}
-                columnWrapperStyle={styles.columnWrapper}
-            />
 
-            {/* Create new note */}
-            <TouchableOpacity style={[
-                styles.createNoteButton,
-                {
-                    backgroundColor: currentTheme.lowerOpacityText
-                }
-            ]} onPress={onCreateNote}>
-                <Text style={[
-                    styles.buttonText,
-                    {
-                        color: currentTheme.secondaryColor
-                    }
-                ]}>+</Text>
-            </TouchableOpacity>
+                </View>
+
+            ) : section === 'remindeer' ? (
+                <Text>A</Text>
+            ) : null}
+
+
+
 
             <StatusBar style={currentTheme.name === 'dark' ? "light" : "dark"} hidden={false} />
         </View>
@@ -262,10 +478,19 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         flex: 1,
     },
+
+    appsSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+        marginTop: 24,
+        marginBottom: 0,
+    },
+
     topNavContainer: {
         width: '100%',
         height: 72,
-        marginTop: 32,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
@@ -304,7 +529,7 @@ const styles = StyleSheet.create({
         flex: 1,
         zIndex: 10,
         position: 'absolute',
-        top: 44,
+        top: 86,
         left: 0,
         width: 144,
         height: '100%',

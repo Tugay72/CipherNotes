@@ -18,7 +18,7 @@ export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
     const { saveNoteByID } = route.params;
     const { deleteNoteByID } = route.params;
-
+    const { currentTheme } = useTheme();
 
     const [visible, setVisible] = useState(false);
     const [title, setTitle] = useState(route.params?.title || '');
@@ -38,11 +38,8 @@ export default function CreateNote({ navigation, route }) {
 
     const [stylizeVisible, setStylizeVisible] = useState(false);
     const [fontSize, setFontSize] = useState(16);
-    const [fontStyle, setFontStyle] = useState('normal');
-    const [fontColor, setFontColor] = useState('#ffffff')
     const [bgImage, setBgImage] = useState(null);
-    const [bgColor, setBgColor] = useState('#000000');
-    const [selectedTheme, setSelectedTheme] = useState(null);
+    const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
     const [audioUri, setAudioUri] = useState(null);
     const [sound, setSound] = useState(null);
@@ -54,7 +51,7 @@ export default function CreateNote({ navigation, route }) {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const { currentTheme } = useTheme();
+
 
     useEffect(() => {
         if (selectedTheme == null) {
@@ -62,6 +59,7 @@ export default function CreateNote({ navigation, route }) {
         }
     }, [selectedTheme]);
 
+    console.log(selectedTheme)
 
     // Merge text blocks
     useEffect(() => {
@@ -95,8 +93,7 @@ export default function CreateNote({ navigation, route }) {
 
 
     const applyTheme = (theme) => {
-        setBgColor(theme.primaryColor);
-        setFontColor(theme.secondaryColor)
+        setSelectedTheme(theme)
     };
 
     const openMenu = () => setVisible(true);
@@ -123,7 +120,7 @@ export default function CreateNote({ navigation, route }) {
         setDate(formattedDate);
 
         const contentJSON = JSON.stringify(contentBlocks);
-        saveNoteByID(id, title, contentJSON, formattedTime, formattedDate);
+        saveNoteByID(id, title, contentJSON, formattedTime, formattedDate, selectedTheme);
         Keyboard.dismiss();
     };
 
@@ -242,9 +239,6 @@ export default function CreateNote({ navigation, route }) {
         setContentBlocks(newBlocks);
     }
 
-
-
-
     const BNB_DATA = [
         { id: "1", icon: 'record-voice-over', onPress: () => setShowVoiceNote(true) },
         { id: "2", icon: 'image', onPress: addImage },
@@ -262,8 +256,7 @@ export default function CreateNote({ navigation, route }) {
                 setFontSize={setFontSize}
                 bgImage={bgImage}
                 setBgImage={setBgImage}
-                bgColor={bgColor}
-                setBgColor={setBgColor}
+                bgColor={selectedTheme.primaryColor}
                 selectedTheme={selectedTheme}
                 setSelectedTheme={setSelectedTheme}
                 applyTheme={applyTheme}
@@ -277,7 +270,7 @@ export default function CreateNote({ navigation, route }) {
                 style={{ flex: 1 }}
                 resizeMode="cover"
             >
-                <View style={[styles.container, { backgroundColor: bgImage ? 'transparent' : bgColor }]}>
+                <View style={[styles.container, { backgroundColor: bgImage ? 'transparent' : selectedTheme.primaryColor }]}>
 
 
                     {/* Top Navigation */}
@@ -288,7 +281,7 @@ export default function CreateNote({ navigation, route }) {
                                     {
                                         paddingHorizontal: 8,
                                         paddingVertical: 12,
-                                        color: fontColor,
+                                        color: selectedTheme.secondaryColor,
                                         fontSize: 24,
 
                                     }}
@@ -302,7 +295,7 @@ export default function CreateNote({ navigation, route }) {
                                     {
                                         paddingTop: 4,
                                         paddingHorizontal: 8,
-                                        color: fontColor
+                                        color: selectedTheme.secondaryColor
                                     }]}>✔</Text>
                             </TouchableOpacity>
                         ) : (
@@ -314,15 +307,15 @@ export default function CreateNote({ navigation, route }) {
                                     gap: 24
                                 }}>
                                 <TouchableOpacity onPress={() => console.log('Add password')}>
-                                    <MaterialCommunityIcons name="lock-outline" size={24} color="#333" />
+                                    <MaterialCommunityIcons name="lock-outline" size={24} color={selectedTheme.placeholderText} />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => setStylizeVisible(true)}>
-                                    <MaterialCommunityIcons name="palette-outline" size={24} color="#333" />
+                                    <MaterialCommunityIcons name="palette-outline" size={24} color={selectedTheme.placeholderText} />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
-                                    <MaterialCommunityIcons name="delete-outline" size={24} color="#d32f2f" />
+                                    <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -332,19 +325,19 @@ export default function CreateNote({ navigation, route }) {
                     <View style={styles.content}>
                         <TextInput
                             placeholder="Title"
-                            placeholderTextColor='#3a3a3a'
+                            placeholderTextColor={selectedTheme.placeholderText}
                             value={title}
                             maxLength={60}
                             numberOfLines={1}
                             onChangeText={setTitle}
                             onFocus={() => setEditing(true)}
                             onBlur={() => setEditing(false)}
-                            style={[styles.titleInput, { color: fontColor }]}
+                            style={[styles.titleInput, { color: selectedTheme.titleColor }]}
                         />
 
                         <View style={styles.infoBox}>
-                            <Text style={{ color: fontColor + 60 }}>Last edit: {time + '  ' + date}</Text>
-                            <Text style={{ color: fontColor + 60 }}>
+                            <Text style={{ color: selectedTheme.placeholderText }}>Last edit: {time + '  ' + date}</Text>
+                            <Text style={{ color: selectedTheme.placeholderText }}>
                                 Characters: {
                                     contentBlocks.filter(b => b.type === 'text')
                                         .map(b => b.content.length).reduce((a, b) => a + b, 0)
@@ -366,8 +359,6 @@ export default function CreateNote({ navigation, route }) {
                                                     height: 200,
                                                     borderRadius: 12,
                                                     marginBottom: 10,
-                                                    borderWidth: 1,
-                                                    borderColor: '#ccc'
                                                 }}
                                                 resizeMode="cover"
                                             />
@@ -380,7 +371,7 @@ export default function CreateNote({ navigation, route }) {
                                             }}>
                                                 <TouchableOpacity
                                                     onPress={() => {
-                                                        setImageToZoom(item.content)
+                                                        setImageToZoom(item.content);
                                                         setImageModalVisible(true);
                                                     }}
                                                     style={{
@@ -388,9 +379,10 @@ export default function CreateNote({ navigation, route }) {
                                                         padding: 12,
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
+                                                        backgroundColor: selectedTheme.buttonBg,
                                                     }}
                                                 >
-                                                    <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>
+                                                    <Text style={{ color: selectedTheme.secondaryColor, fontSize: 16, fontWeight: 'bold' }}>
                                                         Görüntüle
                                                     </Text>
                                                 </TouchableOpacity>
@@ -399,21 +391,24 @@ export default function CreateNote({ navigation, route }) {
                                                     onPress={() => deleteImage(index)}
                                                     style={{
                                                         width: 60,
-                                                        backgroundColor: '#e74c3c',
+                                                        backgroundColor: selectedTheme.errorButtonBg || '#e74c3c', // tema içinde errorColor varsa kullan, yoksa kırmızı
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        padding: 12
+                                                        padding: 12,
                                                     }}
                                                 >
-                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>🗑️</Text>
+                                                    <Text style={{ color: selectedTheme.textOnError || '#fff', fontSize: 18, fontWeight: 'bold' }}>
+                                                        🗑️
+                                                    </Text>
                                                 </TouchableOpacity>
+
                                             </View>
                                         </View>
                                     );
                                 } else if (item.type === 'audio') {
                                     return (
                                         <View style={{ marginVertical: 16, }}>
-                                            <Text style={{ color: fontColor, fontSize: 16, marginBottom: 10 }}>
+                                            <Text style={{ color: selectedTheme.secondaryColor, fontSize: 16, marginBottom: 10 }}>
                                                 🎙️  {item.title}:
                                             </Text>
                                             <View style={{ flexDirection: 'row', width: '100%' }}>
@@ -518,11 +513,11 @@ export default function CreateNote({ navigation, route }) {
                                         <TextInput
                                             multiline
                                             placeholder="Start typing..."
-                                            placeholderTextColor={fontColor + 75}
+                                            placeholderTextColor={selectedTheme.placeholderText}
                                             style={[
                                                 styles.textInput,
                                                 {
-                                                    color: fontColor, fontSize: fontSize
+                                                    color: selectedTheme.secondaryColor, fontSize: fontSize
                                                 }
                                             ]}
                                             value={item.content}
@@ -626,9 +621,6 @@ export default function CreateNote({ navigation, route }) {
                         onDeleteInput={onDeleteInput}
                         message={"Are you sure you want to delete this note?"}
                     ></DeleteModal>
-
-
-
 
                     {/* General Modal to show images and drawings at fullscreen */}
                     <Modal visible={imageModalVisible} transparent={true}>

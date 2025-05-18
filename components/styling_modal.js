@@ -76,7 +76,7 @@ export default function StylingModal({
                                 ]}
                                 onPress={() => {
                                     applyTheme(theme);
-                                    setSelectedTheme(theme.name);
+                                    setSelectedTheme(theme);
                                 }}
                             >
                                 <View

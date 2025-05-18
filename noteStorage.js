@@ -57,3 +57,46 @@ export const listNoteIDs = async () => {
         return [];
     }
 };
+
+
+// Encrypted ToDo functions
+export const saveToDo = async (id, todoData) => {
+    try {
+        const plainText = JSON.stringify(todoData);
+        const encryptedText = encrypt(plainText);
+        await AsyncStorage.setItem(`todo-${id}`, encryptedText);
+    } catch (error) {
+        console.error('Error saving todo:', error);
+    }
+};
+
+export const loadToDo = async (id) => {
+    try {
+        const encryptedText = await AsyncStorage.getItem(`todo-${id}`);
+        if (!encryptedText) return null;
+        const plainText = decrypt(encryptedText);
+        return JSON.parse(plainText);
+    } catch (error) {
+        console.error('Error loading todo:', error);
+        return null;
+    }
+};
+
+export const deleteToDo = async (id) => {
+    try {
+        await AsyncStorage.removeItem(`todo-${id}`);
+    } catch (error) {
+        console.error('Error deleting todo:', error);
+    }
+};
+
+export const listToDoIDs = async () => {
+    try {
+        const keys = await AsyncStorage.getAllKeys();
+        return keys.filter(key => key.startsWith('todo-'));
+    } catch (error) {
+        console.error('Error listing todos:', error);
+        return [];
+    }
+};
+
