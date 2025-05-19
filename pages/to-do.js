@@ -35,7 +35,8 @@ const ToDoComponent = ({ navigation, route }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const [stylizeVisible, setStylizeVisible] = useState(false);
-    const [fontSize, setFontSize] = useState(16);
+    const [fontSize, setFontSize] = useState(route.params?.fontSize || 16);
+    const [fontFamily, setFontFamily] = useState(route.params?.fontFamily || 'system');
     const [bgImage, setBgImage] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
@@ -134,7 +135,13 @@ const ToDoComponent = ({ navigation, route }) => {
                 onChangeText={setTitle}
                 onFocus={() => setEditing(true)}
                 onBlur={() => setEditing(false)}
-                style={[styles.title, { color: selectedTheme.titleColor }]}
+                style={[
+                    styles.title,
+                    {
+                        color: selectedTheme.titleColor,
+                        fontFamily: fontFamily,
+                        fontSize: fontSize * 1.5
+                    }]}
             />
 
             <View style={styles.inputContainer}>
@@ -142,6 +149,7 @@ const ToDoComponent = ({ navigation, route }) => {
                     style={[styles.input, {
                         backgroundColor: selectedTheme.containerBg,
                         color: selectedTheme.secondaryColor,
+                        fontFamily: fontFamily
                     }]}
                     placeholder="Add a task"
                     placeholderTextColor={selectedTheme.secondaryColor}
@@ -152,7 +160,7 @@ const ToDoComponent = ({ navigation, route }) => {
                     style={[styles.addButton, { backgroundColor: selectedTheme.lowerOpacityText }]}
                     onPress={addTask}
                 >
-                    <Text style={[styles.addButtonText, { color: selectedTheme.buttonText }]}>Add</Text>
+                    <Text style={[styles.addButtonText, { color: selectedTheme.buttonText, fontFamily: fontFamily }]}>Add</Text>
                 </TouchableOpacity>
             </View>
 
@@ -176,7 +184,8 @@ const ToDoComponent = ({ navigation, route }) => {
                                 {
                                     color: selectedTheme.secondaryColor,
                                     textDecorationLine: item.completed ? 'line-through' : 'none',
-                                    flex: 1
+                                    flex: 1,
+                                    fontFamily: fontFamily
                                 }
                             ]}
                         >
@@ -200,6 +209,8 @@ const ToDoComponent = ({ navigation, route }) => {
                 setStylizeVisible={setStylizeVisible}
                 fontSize={fontSize}
                 setFontSize={setFontSize}
+                fontFamily={fontFamily}
+                setFontFamily={setFontFamily}
                 bgImage={bgImage}
                 setBgImage={setBgImage}
                 bgColor={selectedTheme.primaryColor}
@@ -240,7 +251,6 @@ const styles = StyleSheet.create({
         left: 8,
     },
     title: {
-        fontSize: 24,
         marginTop: 64,
         marginBottom: 12,
         fontWeight: 'bold',

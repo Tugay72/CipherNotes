@@ -27,6 +27,45 @@ const themes = [
         titleColor: "#000000"
     },
     {
+        name: "hacker",
+        primaryColor: "#0F0F0F",
+        secondaryColor: "#00FF00",
+        placeholderText: "rgba(0, 255, 0, 0.34)",
+        lowerOpacityText: "#00FF00",
+        containerBg: "#0a0a0a",
+        buttonBg: "#e85c8c",
+        buttonText: "#000000",
+        errorColor: "#FF1744",
+        textOnError: "#121212",
+        titleColor: "#00FF00"
+    },
+    {
+        name: "cloud",
+        primaryColor: "#90A4AE",
+        secondaryColor: "#ECEFF1",
+        placeholderText: "rgb(199, 199, 199)",
+        lowerOpacityText: "#B0BEC5",
+        containerBg: "#546E7A",
+        buttonBg: "#5a666c",
+        buttonText: "#F1F1F1",
+        errorColor: "#EF5350",
+        textOnError: "#FFFFFF",
+        titleColor: "#ECEFF1"
+    },
+    {
+        name: "steel",
+        primaryColor: "#546E7A",
+        secondaryColor: "#CFD8DC",
+        placeholderText: "rgb(155, 155, 155)",
+        lowerOpacityText: "#90A4AE",
+        containerBg: "#263238",
+        buttonBg: "#78909C",
+        buttonText: "#ECEFF1",
+        errorColor: "#FF5252",
+        textOnError: "#FFFFFF",
+        titleColor: "#ECEFF1"
+    },
+    {
         name: "sunset",
         primaryColor: "#FF7043",
         secondaryColor: "#FFE0B2",
@@ -77,19 +116,6 @@ const themes = [
         errorColor: "#a70000",
         textOnError: "#FFF0F5",
         titleColor: "#FFFFFF"
-    },
-    {
-        name: "hacker",
-        primaryColor: "#0F0F0F",
-        secondaryColor: "#00FF00",
-        placeholderText: "rgba(0, 255, 0, 0.34)",
-        lowerOpacityText: "#00FF00",
-        containerBg: "#0a0a0a",
-        buttonBg: "#e85c8c",
-        buttonText: "#000000",
-        errorColor: "#FF1744",
-        textOnError: "#121212",
-        titleColor: "#00FF00"
     },
     {
         name: "cyberpunk",
@@ -144,19 +170,6 @@ const themes = [
         titleColor: "#E0F7FA"
     },
     {
-        name: "cloud",
-        primaryColor: "#90A4AE",
-        secondaryColor: "#ECEFF1",
-        placeholderText: "rgb(199, 199, 199)",
-        lowerOpacityText: "#B0BEC5",
-        containerBg: "#546E7A",
-        buttonBg: "#5a666c",
-        buttonText: "#F1F1F1",
-        errorColor: "#EF5350",
-        textOnError: "#FFFFFF",
-        titleColor: "#ECEFF1"
-    },
-    {
         name: "mystic",
         primaryColor: "#7E57C2",
         secondaryColor: "#EDE7F6",
@@ -169,19 +182,7 @@ const themes = [
         textOnError: "#FFFFFF",
         titleColor: "#FFFFFF"
     },
-    {
-        name: "steel",
-        primaryColor: "#546E7A",
-        secondaryColor: "#CFD8DC",
-        placeholderText: "rgb(155, 155, 155)",
-        lowerOpacityText: "#90A4AE",
-        containerBg: "#263238",
-        buttonBg: "#78909C",
-        buttonText: "#ECEFF1",
-        errorColor: "#FF5252",
-        textOnError: "#FFFFFF",
-        titleColor: "#ECEFF1"
-    }
+
 ];
 
 export default themes;

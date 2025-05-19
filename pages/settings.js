@@ -71,12 +71,7 @@ export default function SettingsScreen({ navigation }) {
                         <Text style={styles.optionText}>Change Password</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.option}
-                        onPress={() => Alert.alert('Signed Out', 'You have been logged out.')}
-                    >
-                        <Text style={styles.optionText}>Sign Out</Text>
-                    </TouchableOpacity>
+
                 </View>
 
                 {/* App Settings */}

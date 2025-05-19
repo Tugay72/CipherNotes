@@ -1,12 +1,27 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import Slider from '@react-native-community/slider';
+
+const fontFamilies = [
+    'system',
+    'monospace',       // ✔ Android & iOS
+    'sans-serif',      // ✔ Android (default Android font)
+    'sans-serif-light',
+    'sans-serif-condensed',
+    'sans-serif-medium',
+    'serif',           // ✔ Android & iOS (Times New Roman benzeri)
+    'Roboto',          // ✔ Android (varsayılan Android fontu)
+    'normal',          // sistem fontu (System yerine)
+];
+
 
 export default function StylingModal({
     stylizeVisible,
     setStylizeVisible,
     fontSize,
     setFontSize,
+    fontFamily,
+    setFontFamily,
     bgImage,
     setBgImage,
     bgColor,
@@ -44,24 +59,26 @@ export default function StylingModal({
                         />
                     </View>
 
-                    {/* Background Color */}
-                    <Text style={styles.modalLabel}>Background Color</Text>
-                    <View style={styles.optionRow}>
-                        {['#000000', '#ffffff'].map((color) => (
-                            <TouchableOpacity
-                                key={color}
-                                style={[
-                                    styles.colorBox,
-                                    { backgroundColor: color },
-                                    bgColor === color && !bgImage && styles.colorSelected
-                                ]}
-                                onPress={() => {
-                                    setBgColor(color);
-                                    setBgImage(null);
-                                }}
-                            />
-                        ))}
+                    <View style={styles.fontOptionsContainer}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            {fontFamilies.map((font) => (
+                                <TouchableOpacity
+                                    key={font}
+                                    style={[
+                                        styles.fontOptionBox,
+                                        fontFamily === font && styles.fontOptionSelected
+                                    ]}
+                                    onPress={() => setFontFamily(font)}
+                                >
+                                    <Text style={[styles.fontSampleText, { fontFamily: font }]}>
+                                        {font}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </View>
+
+
 
                     {/* Theme Selection */}
                     <Text style={styles.modalLabel}>Choose a Theme</Text>
@@ -92,6 +109,8 @@ export default function StylingModal({
                     >
                         <Text style={{ color: 'white' }}>Done</Text>
                     </TouchableOpacity>
+
+
                 </View>
             </View>
         </Modal>
@@ -170,4 +189,30 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#00000033',
     },
+    fontOptionsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginVertical: 10,
+    },
+
+    fontOptionBox: {
+        backgroundColor: '#333',
+        borderRadius: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        margin: 4,
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+
+    fontOptionSelected: {
+        borderColor: '#007bff',
+    },
+
+    fontSampleText: {
+        color: 'white',
+        fontSize: 16,
+    },
+
 });

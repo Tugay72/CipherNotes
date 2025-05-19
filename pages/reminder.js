@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -11,8 +11,11 @@ import {
 import { useTheme } from '../theme_context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import CountdownTimer from '../components/countdown_timer';
 
 import DeleteModal from '../components/delete_modal';
+
+import * as Notifications from 'expo-notifications';
 
 const Reminder = ({ navigation, route }) => {
     const { id, saveReminderByID, deleteReminderByID } = route.params;
@@ -21,17 +24,24 @@ const Reminder = ({ navigation, route }) => {
     const [title, setTitle] = useState(route.params?.title || '');
     const [date, setDate] = useState(route.params?.date ? new Date(route.params.date) : new Date());
 
-    // showMode = 'date' or 'time'
     const [showPicker, setShowPicker] = useState(false);
     const [pickerMode, setPickerMode] = useState('date');
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
+    useEffect(() => {
+        registerForPushNotificationsAsync();
+    }, []);
+
     const goBack = async () => {
-        saveReminderByID(id, title, date.toISOString(), selectedTheme);
+        const saved = await saveReminderByID(id, title, date.toISOString(), selectedTheme);
+        if (saved) {
+            await scheduleNotification(date, title);
+        }
         navigation.navigate('Home');
     };
+
 
     const onDeleteInput = async () => {
         await deleteReminderByID(id);
@@ -40,21 +50,18 @@ const Reminder = ({ navigation, route }) => {
 
     // DateTimePicker event handler
     const onChange = (event, selectedDate) => {
-        setShowPicker(Platform.OS === 'ios'); // On iOS keep picker open, on Android close after selection
+        setShowPicker(Platform.OS === 'ios');
         if (selectedDate) {
             if (pickerMode === 'date') {
-                // Set date part, keep current time
                 const currentDate = new Date(date);
                 currentDate.setFullYear(selectedDate.getFullYear());
                 currentDate.setMonth(selectedDate.getMonth());
                 currentDate.setDate(selectedDate.getDate());
                 setDate(currentDate);
 
-                // Show time picker next
                 setPickerMode('time');
                 setShowPicker(true);
             } else if (pickerMode === 'time') {
-                // Set time part, keep current date
                 const currentDate = new Date(date);
                 currentDate.setHours(selectedDate.getHours());
                 currentDate.setMinutes(selectedDate.getMinutes());
@@ -63,10 +70,64 @@ const Reminder = ({ navigation, route }) => {
         }
     };
 
+
     const showDatepicker = () => {
         setPickerMode('date');
         setShowPicker(true);
     };
+
+    async function registerForPushNotificationsAsync() {
+        const { status } = await Notifications.getPermissionsAsync();
+
+        let finalStatus = status;
+        if (status !== 'granted') {
+            const { status: askedStatus } = await Notifications.requestPermissionsAsync();
+            finalStatus = askedStatus;
+        }
+
+        if (finalStatus !== 'granted') {
+            alert('Bildirim izni verilmedi!');
+            return false;
+        }
+
+        return true;
+    }
+
+    useEffect(() => {
+        const subscription = Notifications.addNotificationReceivedListener(notification => {
+            console.log('Notification received:', notification);
+        });
+
+        return () => subscription.remove();
+    }, []);
+
+
+    async function scheduleNotification(date, title) {
+        const trigger = date.getTime() - Date.now();
+
+        console.log('Notification trigger in ms:', trigger);
+
+        if (trigger <= 0) {
+            return;
+        }
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: title || 'Hatırlatıcı',
+                body: 'Hatırlatıcı zamanı geldi!',
+                sound: 'default',
+            },
+            trigger: {
+                seconds: Math.floor(trigger / 1000),
+                repeats: false,
+            },
+        });
+
+    }
+
+
+
+
 
     return (
         <View style={[styles.container, { backgroundColor: selectedTheme.primaryColor }]}>
@@ -97,49 +158,46 @@ const Reminder = ({ navigation, route }) => {
             />
 
             <View style={styles.reminderSection}>
-                <View style={{ gap: 24 }}>
-                    <Text style={
-                        {
-                            alignSelf: 'center',
-                            fontSize: 32,
-                            color: selectedTheme.secondaryColor
+                <CountdownTimer
+                    targetDate={date}
+                    style={{ fontSize: 32, color: selectedTheme.secondaryColor, fontWeight: 'bold' }}
+                />
 
-                        }}>
-                        {date.toLocaleString()}
-                    </Text>
-
+                <View>
                     <TouchableOpacity
                         onPress={showDatepicker}
                         style={[styles.dateButton, { backgroundColor: selectedTheme.buttonBg }]}
                     >
-                        <Text style={{ color: selectedTheme.secondaryColor }}>Select Date & Time</Text>
+                        <Text style={{ color: selectedTheme.buttonText }}>Select Date & Time</Text>
+                    </TouchableOpacity>
+
+                    {showPicker && (
+                        <DateTimePicker
+                            value={date}
+                            mode={pickerMode}
+                            is24Hour={true}
+                            display="default"
+                            onChange={onChange}
+                        />
+                    )}
+
+                    <TouchableOpacity
+                        onPress={goBack}
+                        style={{
+                            marginTop: 16,
+                            backgroundColor: selectedTheme.secondaryColor,
+                            padding: 12,
+                            borderRadius: 8,
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Text style={{ color: selectedTheme.primaryColor, fontWeight: 'bold' }}>Save Reminder</Text>
                     </TouchableOpacity>
                 </View>
 
 
 
-                {showPicker && (
-                    <DateTimePicker
-                        value={date}
-                        mode={pickerMode}
-                        is24Hour={true}
-                        display="default"
-                        onChange={onChange}
-                    />
-                )}
 
-                <TouchableOpacity
-                    onPress={goBack}
-                    style={{
-                        marginTop: 24,
-                        backgroundColor: selectedTheme.secondaryColor,
-                        padding: 12,
-                        borderRadius: 8,
-                        alignItems: 'center',
-                    }}
-                >
-                    <Text style={{ color: selectedTheme.primaryColor, fontWeight: 'bold' }}>Save Reminder</Text>
-                </TouchableOpacity>
             </View>
 
             <DeleteModal
@@ -182,7 +240,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between'
     },
     dateButton: {
-        borderWidth: 1,
+
         borderRadius: 8,
         padding: 12,
         alignItems: 'center',

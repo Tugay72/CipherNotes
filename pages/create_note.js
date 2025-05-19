@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import { useTheme } from '../theme_context';
@@ -13,12 +13,20 @@ import StylingModal from "../components/styling_modal";
 
 import DrawingCanvas from "../components/drawing_canvas";
 import DeleteModal from "../components/delete_modal";
+import PasswordModal from "../components/note_password";
+import CreatePasswordModal from "../components/create_note_password";
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
     const { saveNoteByID } = route.params;
     const { deleteNoteByID } = route.params;
     const { currentTheme } = useTheme();
+
+    const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+    const [unlocked, setUnlocked] = useState(route.params?.notePassword ? false : true);
+
+    const [showCreatePasswordModal, setShowCreatePasswordModal] = useState(false);
+    const [notePassword, setNotePassword] = useState(route.params?.notePassword || null);
 
     const [visible, setVisible] = useState(false);
     const [title, setTitle] = useState(route.params?.title || '');
@@ -37,7 +45,8 @@ export default function CreateNote({ navigation, route }) {
     const [editing, setEditing] = useState(false);
 
     const [stylizeVisible, setStylizeVisible] = useState(false);
-    const [fontSize, setFontSize] = useState(16);
+    const [fontSize, setFontSize] = useState(route.params?.fontSize || 16);
+    const [fontFamily, setFontFamily] = useState(route.params?.fontFamily || 'system');
     const [bgImage, setBgImage] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
@@ -50,6 +59,8 @@ export default function CreateNote({ navigation, route }) {
     const [imageToZoom, setImageToZoom] = useState(null);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    console.log('ROUTE', route.params?.notePassword, 'UNLOCKED', unlocked, 'NOTEPASSWORD', notePassword);
 
 
 
@@ -89,6 +100,34 @@ export default function CreateNote({ navigation, route }) {
     }, [contentBlocks]);
 
 
+    const getTextFromContentBlocks = (contentBlocks) => {
+        return contentBlocks
+            .filter(block => block.type === 'text')
+            .map(block => block.content)
+            .join('\n');
+    }
+
+
+    const shareNote = () => {
+
+        const noteText = getTextFromContentBlocks(contentBlocks);
+
+        Share.share({
+            message: noteText,
+        })
+            .then(result => {
+                if (result.action === Share.sharedAction) {
+                    if (result.activityType) {
+                        console.log('Paylaşılan aktivite:', result.activityType);
+                    } else {
+                        console.log('Not paylaşıldı!');
+                    }
+                } else if (result.action === Share.dismissedAction) {
+                    console.log('Paylaşım iptal edildi.');
+                }
+            })
+            .catch(error => console.log('Paylaşım hatası:', error));
+    }
 
     const applyTheme = (theme) => {
         setSelectedTheme(theme)
@@ -118,7 +157,7 @@ export default function CreateNote({ navigation, route }) {
         setDate(formattedDate);
 
         const contentJSON = JSON.stringify(contentBlocks);
-        saveNoteByID(id, title, contentJSON, formattedTime, formattedDate, selectedTheme);
+        saveNoteByID(id, notePassword, title, contentJSON, formattedTime, formattedDate, selectedTheme, fontSize, fontFamily);
         Keyboard.dismiss();
     };
 
@@ -246,417 +285,457 @@ export default function CreateNote({ navigation, route }) {
 
     return (
         <Provider>
-
-
             <ImageBackground
                 source={bgImage ? { uri: bgImage } : null}
                 style={{ flex: 1 }}
                 resizeMode="cover"
             >
-                <View style={[styles.container, { backgroundColor: bgImage ? 'transparent' : selectedTheme.primaryColor }]}>
+                {unlocked ? (
+                    <View style={[
+                        styles.container,
+                        {
+                            backgroundColor: bgImage ? 'transparent' : selectedTheme.primaryColor,
+                        }]}>
 
 
-                    {/* Top Navigation */}
-                    <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
-                        <TouchableOpacity onPress={goBack}>
-                            <MaterialCommunityIcons
-                                style={
-                                    {
-                                        paddingHorizontal: 8,
-                                        paddingVertical: 12,
-                                        color: selectedTheme.secondaryColor,
-                                        fontSize: 24,
+                        {/* Top Navigation */}
+                        <View style={[styles.topNavContainer, { backgroundColor: 'none' }]}>
+                            <TouchableOpacity onPress={goBack}>
+                                <MaterialCommunityIcons
+                                    style={
+                                        {
+                                            paddingHorizontal: 8,
+                                            paddingVertical: 12,
+                                            color: selectedTheme.secondaryColor,
+                                            fontSize: 24,
 
-                                    }}
-                                name="arrow-left-thick" size={24} color="#333" />
-                        </TouchableOpacity>
-
-                        {editing ? (
-                            <TouchableOpacity onPress={onSaveInput}>
-                                <Text style={[
-                                    styles.buttonText,
-                                    {
-                                        paddingTop: 4,
-                                        paddingHorizontal: 8,
-                                        color: selectedTheme.secondaryColor
-                                    }]}>✔</Text>
+                                        }}
+                                    name="arrow-left-thick" size={24} color="#333" />
                             </TouchableOpacity>
-                        ) : (
-                            <View
-                                style={{
-                                    padding: 16,
-                                    flexDirection: 'row',
-                                    justifyContent: 'flex-end',
-                                    gap: 24
-                                }}>
-                                <TouchableOpacity onPress={() => console.log('Add password')}>
-                                    <MaterialCommunityIcons name="lock-outline" size={24} color={selectedTheme.placeholderText} />
+
+                            {editing ? (
+                                <TouchableOpacity onPress={onSaveInput}>
+                                    <Text style={[
+                                        styles.buttonText,
+                                        {
+                                            paddingTop: 4,
+                                            paddingHorizontal: 8,
+                                            color: selectedTheme.secondaryColor
+                                        }]}>✔</Text>
                                 </TouchableOpacity>
+                            ) : (
+                                <View
+                                    style={{
+                                        padding: 16,
+                                        flexDirection: 'row',
+                                        justifyContent: 'flex-end',
+                                        gap: 24
+                                    }}>
+                                    <TouchableOpacity onPress={() => shareNote()}>
+                                        <MaterialCommunityIcons name="share-variant" size={24} color={selectedTheme.placeholderText} />
 
-                                <TouchableOpacity onPress={() => setStylizeVisible(true)}>
-                                    <MaterialCommunityIcons name="palette-outline" size={24} color={selectedTheme.placeholderText} />
-                                </TouchableOpacity>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setShowCreatePasswordModal(true)}>
+                                        <MaterialCommunityIcons name="lock-outline" size={24} color={selectedTheme.placeholderText} />
+                                    </TouchableOpacity>
 
-                                <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
-                                    <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
+                                    <TouchableOpacity onPress={() => setStylizeVisible(true)}>
+                                        <MaterialCommunityIcons name="palette-outline" size={24} color={selectedTheme.placeholderText} />
+                                    </TouchableOpacity>
 
-                    {/* Content */}
-                    <View style={styles.content}>
-                        <TextInput
-                            placeholder="Title"
-                            placeholderTextColor={selectedTheme.placeholderText}
-                            value={title}
-                            maxLength={60}
-                            numberOfLines={1}
-                            onChangeText={setTitle}
-                            onFocus={() => setEditing(true)}
-                            onBlur={() => setEditing(false)}
-                            style={[styles.titleInput, { color: selectedTheme.titleColor }]}
-                        />
-
-                        <View style={styles.infoBox}>
-                            <Text style={{ color: selectedTheme.placeholderText }}>Last edit: {time + '  ' + date}</Text>
-                            <Text style={{ color: selectedTheme.placeholderText }}>
-                                Characters: {
-                                    contentBlocks.filter(b => b.type === 'text')
-                                        .map(b => b.content.length).reduce((a, b) => a + b, 0)
-                                } / 3000
-                            </Text>
+                                    <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
+                                        <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
 
-                        <FlatList
-                            data={contentBlocks}
-                            keyExtractor={(_, index) => index.toString()}
-                            renderItem={({ item, index }) => {
-                                if (item.type === 'image') {
-                                    return (
-                                        <View style={{ marginBottom: 16 }}>
-                                            <Image
-                                                source={{ uri: item.content }}
-                                                style={{
-                                                    width: '100%',
-                                                    height: 200,
-                                                    borderRadius: 12,
-                                                    marginBottom: 10,
-                                                }}
-                                                resizeMode="cover"
-                                            />
+                        {/* Content */}
+                        <View style={styles.content}>
+                            <TextInput
+                                placeholder="Title"
+                                placeholderTextColor={selectedTheme.placeholderText}
+                                value={title}
+                                maxLength={60}
+                                numberOfLines={1}
+                                onChangeText={setTitle}
+                                onFocus={() => setEditing(true)}
+                                onBlur={() => setEditing(false)}
+                                style={[styles.titleInput, { color: selectedTheme.titleColor, fontFamily: fontFamily, fontSize: fontSize * 1.5, }]}
+                            />
 
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                backgroundColor: '#f2f2f2',
-                                                borderRadius: 12,
-                                                overflow: 'hidden'
-                                            }}>
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        setImageToZoom(item.content);
-                                                        setImageModalVisible(true);
-                                                    }}
-                                                    style={{
-                                                        flex: 1,
-                                                        padding: 12,
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        backgroundColor: selectedTheme.buttonBg,
-                                                    }}
-                                                >
-                                                    <Text style={{ color: selectedTheme.buttonText, fontSize: 16, fontWeight: 'bold' }}>
-                                                        Görüntüle
-                                                    </Text>
-                                                </TouchableOpacity>
+                            <View style={[
+                                styles.infoBox,
+                                {
+                                    flexDirection: fontFamily === 'monospace' ? 'column' : 'row'
+                                }]}>
+                                <Text style={{ color: selectedTheme.placeholderText, fontFamily: fontFamily }}>Last edit: {time + '  ' + date}</Text>
+                                <Text style={{ color: selectedTheme.placeholderText, fontFamily: fontFamily }}>
+                                    Characters: {
+                                        contentBlocks.filter(b => b.type === 'text')
+                                            .map(b => b.content.length).reduce((a, b) => a + b, 0)
+                                    } / 3000
+                                </Text>
+                            </View>
 
-                                                <TouchableOpacity
-                                                    onPress={() => deleteImage(index)}
+                            <FlatList
+                                data={contentBlocks}
+                                keyExtractor={(_, index) => index.toString()}
+                                renderItem={({ item, index }) => {
+                                    if (item.type === 'image') {
+                                        return (
+                                            <View style={{ marginBottom: 16 }}>
+                                                <Image
+                                                    source={{ uri: item.content }}
                                                     style={{
-                                                        width: 60,
-                                                        backgroundColor: selectedTheme.errorButtonBg || '#e74c3c', // tema içinde errorColor varsa kullan, yoksa kırmızı
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        padding: 12,
-                                                    }}
-                                                >
-                                                    <Text style={{ color: selectedTheme.textOnError || '#fff', fontSize: 18, fontWeight: 'bold' }}>
-                                                        🗑️
-                                                    </Text>
-                                                </TouchableOpacity>
-
-                                            </View>
-                                        </View>
-                                    );
-                                } else if (item.type === 'audio') {
-                                    return (
-                                        <View style={{ marginVertical: 16, }}>
-                                            <Text style={{ color: selectedTheme.secondaryColor, fontSize: 16, marginBottom: 10 }}>
-                                                🎙️  {item.title}:
-                                            </Text>
-                                            <View style={{ flexDirection: 'row', width: '100%' }}>
-                                                <View
-                                                    style={{
-                                                        flexDirection: 'row',
-                                                        backgroundColor: '#ffffff',
-                                                        borderRadius: 12,
-                                                        overflow: 'hidden',
                                                         width: '100%',
+                                                        height: 200,
+                                                        borderRadius: 12,
+                                                        marginBottom: 10,
                                                     }}
-                                                >
+                                                    resizeMode="cover"
+                                                />
+
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    backgroundColor: '#f2f2f2',
+                                                    borderRadius: 12,
+                                                    overflow: 'hidden'
+                                                }}>
                                                     <TouchableOpacity
                                                         onPress={() => {
-                                                            if (!sound) {
-                                                                playAudio(item.content);
-                                                            } else {
-                                                                stopAudio();
-                                                            }
+                                                            setImageToZoom(item.content);
+                                                            setImageModalVisible(true);
                                                         }}
-                                                        style={[styles.voiceNote, { width: '80%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: 12,
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            backgroundColor: selectedTheme.buttonBg,
+                                                        }}
                                                     >
-                                                        <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
-                                                            {sound ? '■  ' + item.duration : '➤  ' + item.duration}
+                                                        <Text style={{ color: selectedTheme.buttonText, fontSize: 16, fontWeight: 'bold' }}>
+                                                            Görüntüle
                                                         </Text>
                                                     </TouchableOpacity>
 
                                                     <TouchableOpacity
-                                                        onPress={() => deleteAudio(index)}
-                                                        style={[styles.voiceNote, { width: '20%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                        onPress={() => deleteImage(index)}
+                                                        style={{
+                                                            width: 60,
+                                                            backgroundColor: selectedTheme.errorButtonBg || '#e74c3c', // tema içinde errorColor varsa kullan, yoksa kırmızı
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            padding: 12,
+                                                        }}
                                                     >
-                                                        <Image
-                                                            source={require('../assets/trash_can_icon.png')}
-                                                            style={{ width: 20, height: 20 }}
-                                                            resizeMode="cover"
-                                                        />
+                                                        <Text style={{ color: selectedTheme.textOnError || '#fff', fontSize: 18, fontWeight: 'bold', }}>
+                                                            🗑️
+                                                        </Text>
+                                                    </TouchableOpacity>
+
+                                                </View>
+                                            </View>
+                                        );
+                                    } else if (item.type === 'audio') {
+                                        return (
+                                            <View style={{ marginVertical: 16, }}>
+                                                <Text style={{ color: selectedTheme.secondaryColor, fontSize: 16, marginBottom: 10 }}>
+                                                    🎙️  {item.title}:
+                                                </Text>
+                                                <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                    <View
+                                                        style={{
+                                                            flexDirection: 'row',
+                                                            backgroundColor: '#ffffff',
+                                                            borderRadius: 12,
+                                                            overflow: 'hidden',
+                                                            width: '100%',
+                                                        }}
+                                                    >
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                if (!sound) {
+                                                                    playAudio(item.content);
+                                                                } else {
+                                                                    stopAudio();
+                                                                }
+                                                            }}
+                                                            style={[styles.voiceNote, { width: '80%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                        >
+                                                            <Text style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>
+                                                                {sound ? '■  ' + item.duration : '➤  ' + item.duration}
+                                                            </Text>
+                                                        </TouchableOpacity>
+
+                                                        <TouchableOpacity
+                                                            onPress={() => deleteAudio(index)}
+                                                            style={[styles.voiceNote, { width: '20%', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' }]}
+                                                        >
+                                                            <Image
+                                                                source={require('../assets/trash_can_icon.png')}
+                                                                style={{ width: 20, height: 20 }}
+                                                                resizeMode="cover"
+                                                            />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </View>
+
+                                            </View>
+                                        );
+                                    } else if (item.type === 'drawing') {
+                                        console.log(item.content)
+                                        return (
+                                            <View style={{ marginBottom: 16 }}>
+                                                <Image
+                                                    source={{ uri: item.content }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: 200,
+                                                        borderRadius: 12,
+                                                        marginBottom: 10,
+                                                        borderWidth: 1,
+                                                        borderColor: '#ccc',
+                                                        backgroundColor: 'white'
+                                                    }}
+                                                    resizeMode="cover"
+                                                />
+
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    backgroundColor: '#f2f2f2',
+                                                    borderRadius: 12,
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            setImageToZoom(item.content)
+                                                            setImageModalVisible(true);
+                                                        }}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: 12,
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                        }}
+                                                    >
+                                                        <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>
+                                                            Görüntüle
+                                                        </Text>
+                                                    </TouchableOpacity>
+
+
+                                                    <TouchableOpacity
+                                                        onPress={() => deleteImage(index)}
+                                                        style={{
+                                                            width: 60,
+                                                            backgroundColor: '#e74c3c',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            padding: 12
+                                                        }}
+                                                    >
+                                                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>🗑️</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
-
-                                        </View>
-                                    );
-                                } else if (item.type === 'drawing') {
-                                    console.log(item.content)
-                                    return (
-                                        <View style={{ marginBottom: 16 }}>
-                                            <Image
-                                                source={{ uri: item.content }}
-                                                style={{
-                                                    width: '100%',
-                                                    height: 200,
-                                                    borderRadius: 12,
-                                                    marginBottom: 10,
-                                                    borderWidth: 1,
-                                                    borderColor: '#ccc',
-                                                    backgroundColor: 'white'
+                                        );
+                                    } else {
+                                        return (
+                                            <TextInput
+                                                multiline
+                                                placeholder="Start typing..."
+                                                placeholderTextColor={selectedTheme.placeholderText}
+                                                style={[
+                                                    styles.textInput,
+                                                    {
+                                                        color: selectedTheme.secondaryColor,
+                                                        fontSize: fontSize,
+                                                        fontFamily: fontFamily
+                                                    }
+                                                ]}
+                                                value={item.content}
+                                                onChangeText={(text) => {
+                                                    const updatedBlocks = [...contentBlocks];
+                                                    updatedBlocks[index].content = text;
+                                                    setContentBlocks(updatedBlocks);
                                                 }}
-                                                resizeMode="cover"
+                                                onFocus={() => setEditing(true)}
                                             />
-
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                backgroundColor: '#f2f2f2',
-                                                borderRadius: 12,
-                                                overflow: 'hidden'
-                                            }}>
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        setImageToZoom(item.content)
-                                                        setImageModalVisible(true);
-                                                    }}
-                                                    style={{
-                                                        flex: 1,
-                                                        padding: 12,
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}
-                                                >
-                                                    <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>
-                                                        Görüntüle
-                                                    </Text>
-                                                </TouchableOpacity>
+                                        );
+                                    }
+                                }}
+                                ListFooterComponent={<View style={{ height: 320 }} />}
+                                showsVerticalScrollIndicator={false}
+                                scrollEnabled={false}
+                            />
 
 
-                                                <TouchableOpacity
-                                                    onPress={() => deleteImage(index)}
-                                                    style={{
-                                                        width: 60,
-                                                        backgroundColor: '#e74c3c',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        padding: 12
-                                                    }}
-                                                >
-                                                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>🗑️</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        </View>
-                                    );
-                                } else {
-                                    return (
-                                        <TextInput
-                                            multiline
-                                            placeholder="Start typing..."
-                                            placeholderTextColor={selectedTheme.placeholderText}
-                                            style={[
-                                                styles.textInput,
-                                                {
-                                                    color: selectedTheme.secondaryColor, fontSize: fontSize
-                                                }
-                                            ]}
-                                            value={item.content}
-                                            onChangeText={(text) => {
-                                                const updatedBlocks = [...contentBlocks];
-                                                updatedBlocks[index].content = text;
-                                                setContentBlocks(updatedBlocks);
-                                            }}
-                                            onFocus={() => setEditing(true)}
-                                        />
-                                    );
-                                }
-                            }}
-                            ListFooterComponent={<View style={{ height: 320 }} />}
-                            showsVerticalScrollIndicator={false}
-                            scrollEnabled={false}
-                        />
-
-
-                    </View>
-
-                    {/* Bottom Navigation Bar */}
-                    <View
-                        style={[
-                            styles.bottomNavigationBar,
-                            {
-                                backgroundColor: 'black',
-                                paddingRight: 140
-                            }
-                        ]}>
-                        <FlatList
-                            data={BNB_DATA}
-                            horizontal
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <View style={styles.bottomNavBaritem}>
-                                    <TouchableOpacity onPress={() => onBottomNavPress(item.onPress)}>
-                                        {item.icon ? (
-                                            <Icon name={item.icon} size={24} color="#FFFFFF" />
-                                        ) : (
-                                            <Text style={styles.buttonText}>
-                                                {item.title}
-                                            </Text>
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                            showsHorizontalScrollIndicator={false}
-                        />
-
-                    </View>
-
-                    {/* Styling Modal */}
-                    <StylingModal
-                        stylizeVisible={stylizeVisible}
-                        setStylizeVisible={setStylizeVisible}
-                        fontSize={fontSize}
-                        setFontSize={setFontSize}
-                        bgImage={bgImage}
-                        setBgImage={setBgImage}
-                        bgColor={selectedTheme.primaryColor}
-                        selectedTheme={selectedTheme}
-                        setSelectedTheme={setSelectedTheme}
-                        applyTheme={applyTheme}
-                        themes={themes}>
-
-                    </StylingModal>
-
-                    {/* Voice Note Modal */}
-                    <Modal
-                        visible={showVoiceNote}
-                        animationType="slide"
-                        transparent={true}
-                        onRequestClose={() => {
-                            setShowVoiceNote(false)
-                            onAudioSave()
-                        }}
-                    >
-                        <View style={styles.voiceModalOverlay}>
-                            <View style={styles.voiceModalContent}>
-                                {/* VoiceNote Component */}
-                                <VoiceNote
-                                    onCancel={() => {
-                                        setShowVoiceNote(false)
-                                        onAudioSave()
-                                    }}
-                                    onVoiceRecorded={onAudioSave}
-                                />
-                            </View>
                         </View>
-                    </Modal>
 
-                    {/* Drawing Modal */}
-                    <Modal
-                        visible={showDrawingCanvas}
-                        animationType="slide"
-                        transparent={true}
-                        onRequestClose={() => setShowDrawingCanvas(false)}
-                    >
-                        <View style={styles.drawingModalOverlay}>
-                            <View style={styles.drawingModalContent}>
-                                <DrawingCanvas
-                                    onSave={(base64Image) => {
-                                        onDrawingSave(base64Image)
-                                        setShowDrawingCanvas(false);
-                                    }}
-                                />
-                            </View>
-                        </View>
-                    </Modal>
-
-                    {/* Delete Note Modal */}
-                    <DeleteModal
-                        showDeleteModal={showDeleteModal}
-                        setShowDeleteModal={setShowDeleteModal}
-                        currentTheme={currentTheme}
-                        onDeleteInput={onDeleteInput}
-                        message={"Are you sure you want to delete this note?"}
-                    ></DeleteModal>
-
-                    {/* General Modal to show images and drawings at fullscreen */}
-                    <Modal visible={imageModalVisible} transparent={true}>
+                        {/* Bottom Navigation Bar */}
                         <View
-                            style={{
-                                flex: 1,
-                                backgroundColor: 'rgba(0,0,0,0.9)'
+                            style={[
+                                styles.bottomNavigationBar,
+                                {
+                                    backgroundColor: 'black',
+                                    paddingRight: 140
+                                }
+                            ]}>
+                            <FlatList
+                                data={BNB_DATA}
+                                horizontal
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <View style={styles.bottomNavBaritem}>
+                                        <TouchableOpacity onPress={() => onBottomNavPress(item.onPress)}>
+                                            {item.icon ? (
+                                                <Icon name={item.icon} size={24} color="#FFFFFF" />
+                                            ) : (
+                                                <Text style={styles.buttonText}>
+                                                    {item.title}
+                                                </Text>
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                                showsHorizontalScrollIndicator={false}
+                            />
+
+                        </View>
+
+                        {/* Styling Modal */}
+                        <StylingModal
+                            stylizeVisible={stylizeVisible}
+                            setStylizeVisible={setStylizeVisible}
+                            fontSize={fontSize}
+                            setFontSize={setFontSize}
+                            fontFamily={fontFamily}
+                            setFontFamily={setFontFamily}
+                            bgImage={bgImage}
+                            setBgImage={setBgImage}
+                            bgColor={selectedTheme.primaryColor}
+                            selectedTheme={selectedTheme}
+                            setSelectedTheme={setSelectedTheme}
+                            applyTheme={applyTheme}
+                            themes={themes}>
+
+                        </StylingModal>
+
+                        {/* Voice Note Modal */}
+                        <Modal
+                            visible={showVoiceNote}
+                            animationType="slide"
+                            transparent={true}
+                            onRequestClose={() => {
+                                setShowVoiceNote(false)
+                                onAudioSave()
                             }}
                         >
-                            {/* Kapat Butonu */}
-                            <TouchableOpacity
-                                style={styles.imageModalCloseButton}
-                                onPress={() => setImageModalVisible(false)}
-                            >
-                                <Text
-                                    style={{
-                                        color: 'white',
-                                        fontSize: 16
-                                    }}
-                                >Kapat</Text>
-                            </TouchableOpacity>
+                            <View style={styles.voiceModalOverlay}>
+                                <View style={styles.voiceModalContent}>
+                                    {/* VoiceNote Component */}
+                                    <VoiceNote
+                                        onCancel={() => {
+                                            setShowVoiceNote(false)
+                                            onAudioSave()
+                                        }}
+                                        onVoiceRecorded={onAudioSave}
+                                    />
+                                </View>
+                            </View>
+                        </Modal>
 
-                            {/* Resim */}
-                            <Image
-                                source={{ uri: imageToZoom }}
+                        {/* Drawing Modal */}
+                        <Modal
+                            visible={showDrawingCanvas}
+                            animationType="slide"
+                            transparent={true}
+                            onRequestClose={() => setShowDrawingCanvas(false)}
+                        >
+                            <View style={styles.drawingModalOverlay}>
+                                <View style={styles.drawingModalContent}>
+                                    <DrawingCanvas
+                                        onSave={(base64Image) => {
+                                            onDrawingSave(base64Image)
+                                            setShowDrawingCanvas(false);
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                        </Modal>
+
+                        {/* Delete Note Modal */}
+                        <DeleteModal
+                            showDeleteModal={showDeleteModal}
+                            setShowDeleteModal={setShowDeleteModal}
+                            currentTheme={currentTheme}
+                            onDeleteInput={onDeleteInput}
+                            message={"Are you sure you want to delete this note?"}
+                        ></DeleteModal>
+
+                        {/* General Modal to show images and drawings at fullscreen */}
+                        <Modal visible={imageModalVisible} transparent={true}>
+                            <View
                                 style={{
                                     flex: 1,
-                                    resizeMode: 'contain',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'rgba(0,0,0,0.9)'
                                 }}
-                            />
-                        </View>
-                    </Modal>
+                            >
+                                {/* Kapat Butonu */}
+                                <TouchableOpacity
+                                    style={styles.imageModalCloseButton}
+                                    onPress={() => setImageModalVisible(false)}
+                                >
+                                    <Text
+                                        style={{
+                                            color: 'white',
+                                            fontSize: 16
+                                        }}
+                                    >Kapat</Text>
+                                </TouchableOpacity>
 
-                    <StatusBar style="light" hidden={false} />
+                                {/* Resim */}
+                                <Image
+                                    source={{ uri: imageToZoom }}
+                                    style={{
+                                        flex: 1,
+                                        resizeMode: 'contain',
+                                        backgroundColor: 'white'
+                                    }}
+                                />
+                            </View>
+                        </Modal>
 
-                </View>
+
+
+                        {/* Create Password Modal */}
+                        <CreatePasswordModal
+                            visible={showCreatePasswordModal}
+                            onClose={() => setShowCreatePasswordModal(false)}
+                            onSave={(newPassword) => setNotePassword(newPassword)}
+                            theme={selectedTheme}
+                        />
+
+                        <StatusBar style="light" hidden={false} />
+
+                    </View>
+                ) : (
+                    (
+                        <PasswordModal
+                            visible={true}
+                            onClose={() => {
+                                setPasswordModalVisible(false);
+                                navigation.navigate('Home');
+                            }}
+                            onUnlock={() => setUnlocked(true)}
+                            notePassword={notePassword}
+                            theme={selectedTheme}
+                        />
+                    )
+                )}
+
             </ImageBackground >
         </Provider >
     );

@@ -2,15 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import NoteBox from '../components/note_box';
+import { useTheme } from '../theme_context';
+import { useIsFocused } from '@react-navigation/native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { useTheme } from '../theme_context';
-import ToDoComponent from './to-do';
+import NoteBox from '../components/note_box';
 import ToDoBox from '../components/to_do_box';
 import ReminderBox from '../components/reminder_box';
 
-import { useIsFocused } from '@react-navigation/native';
 
 
 export default function Home({ navigation }) {
@@ -61,7 +61,8 @@ export default function Home({ navigation }) {
     useEffect(() => {
         filterNotes();
         filterTodos();
-    }, [searchText, notesData, toDoData]);
+        filterReminders();
+    }, [searchText, notesData, toDoData, reminderData]);
 
     const loadNotes = async () => {
         try {
@@ -100,7 +101,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Untitled', content = 'Text', time = '/', date = '/', theme = 'dark') => {
+    const saveNoteByID = async (id, notePassword = '', title = 'Untitled', content = 'Text', time = '/', date = '/', theme = '', fontSize = '', fontFamily = '') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
         if (title == '' || title == null) {
@@ -110,7 +111,7 @@ export default function Home({ navigation }) {
         if (content == '' || content == null) {
             content = 'Text'
         }
-        const newNote = { id, title, content, time, date, theme };
+        const newNote = { id, notePassword, title, content, time, date, theme, fontSize, fontFamily };
 
         if (index !== -1) {
             updatedNotes[index] = newNote;
@@ -128,7 +129,7 @@ export default function Home({ navigation }) {
     };
 
     const onCreateNote = () => {
-        navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', theme: '', saveNoteByID, deleteNoteByID });
+        navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', theme: '', fontSize: '', fontFamily: '', saveNoteByID, deleteNoteByID });
     };
 
     const toggleMenu = () => {
@@ -179,7 +180,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveToDoByID = async (id, contentJSON = [], title = 'Untitled', theme = 'dark') => {
+    const saveToDoByID = async (id, contentJSON = [], title = 'Untitled', theme = '', fontSize = '', fontFamily = '') => {
         let updatedToDos = [...toDoData];
         const index = updatedToDos.findIndex(todo => todo.id === id);
 
@@ -191,8 +192,9 @@ export default function Home({ navigation }) {
             id,
             title,
             contentJSON: typeof contentJSON === 'string' ? contentJSON : JSON.stringify(contentJSON),
-
-            theme: theme
+            theme: theme,
+            fontSize,
+            fontFamily
         };
 
         if (index !== -1) {
@@ -224,9 +226,12 @@ export default function Home({ navigation }) {
     const onCreateToDo = () => {
         navigation.navigate('CreateToDo', {
             id: '',
+            notePassword: '',
             title: '',
             contentJSON: '',
             theme: '',
+            fontSize: '',
+            fontFamily: '',
             saveToDoByID,
             deleteToDoByID
         })
@@ -250,7 +255,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveReminderByID = async (id, title = 'Untitled', date = new Date().toISOString(), theme = 'dark') => {
+    const saveReminderByID = async (id, title = 'Untitled', date = new Date().toISOString(), theme = '') => {
         let updatedReminders = [...reminderData];
         const index = updatedReminders.findIndex(reminder => reminder.id === id);
 
@@ -275,6 +280,7 @@ export default function Home({ navigation }) {
         setReminderData(updatedReminders);
         setFilteredReminders(updatedReminders);
         await saveReminders(updatedReminders);
+        return true;
     };
 
     const deleteReminderByID = async (id) => {
@@ -455,8 +461,21 @@ export default function Home({ navigation }) {
                         numColumns={2}
                         renderItem={({ item }) => (
                             <TouchableOpacity
-                                style={styles.noteItem}
-                                onPress={() => navigation.navigate('CreateNote', { id: item.id, title: item.title, content: item.content, time: item.time, date: item.date, theme: item.theme, saveNoteByID, deleteNoteByID })}
+                                onPress={() => navigation.navigate(
+                                    'CreateNote',
+                                    {
+                                        id: item.id,
+                                        notePassword: item.notePassword,
+                                        title: item.title,
+                                        content: item.content,
+                                        time: item.time,
+                                        date: item.date,
+                                        theme: item.theme,
+                                        fontSize: item.fontSize,
+                                        fontFamily: item.fontFamily,
+                                        saveNoteByID,
+                                        deleteNoteByID
+                                    })}
                             >
                                 <NoteBox note={item} />
                             </TouchableOpacity>
@@ -528,12 +547,13 @@ export default function Home({ navigation }) {
                         renderItem={({ item }) => {
                             return (
                                 <TouchableOpacity
-                                    style={styles.noteItem}
                                     onPress={() => navigation.navigate('CreateToDo', {
                                         id: item.id,
                                         title: item.title,
                                         contentJSON: item.contentJSON,
                                         theme: item.theme,
+                                        fontSize: item.fontSize,
+                                        fontFamily: item.fontFamily,
                                         saveToDoByID,
                                         deleteToDoByID
                                     })}
@@ -609,7 +629,6 @@ export default function Home({ navigation }) {
                         renderItem={({ item }) => {
                             return (
                                 <TouchableOpacity
-                                    style={styles.noteItem}
                                     onPress={() => navigation.navigate('CreateReminder', {
                                         id: item.id,
                                         title: item.title,
@@ -709,7 +728,7 @@ const styles = StyleSheet.create({
         flex: 1,
         zIndex: 10,
         position: 'absolute',
-        top: 86,
+        top: 101,
         left: 0,
         width: 144,
         height: '100%',

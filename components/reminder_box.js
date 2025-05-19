@@ -8,7 +8,6 @@ export default function ReminderBox({ reminder }) {
     const savedTheme = reminder.theme;
     const dateObj = new Date(reminder.date);
 
-    console.log(dateObj)
     return (
         <View style={[styles.container, { backgroundColor: savedTheme?.containerBg ?? currentTheme.containerBg }]}>
             <Text style={[styles.title, { color: savedTheme?.titleColor ?? currentTheme.titleColor }]}>
