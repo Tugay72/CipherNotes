@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Home from './pages/home';
 import CreateNote from './pages/create_note';
 import ToDoComponent from './pages/to-do';
+import Reminder from './pages/reminder';
 import Settings from './pages/settings';
 import PasswordModal from './components/password_modal';
 import SetPasswordModal from './components/set_first_password';
@@ -100,6 +101,7 @@ export default function App() {
                     <Stack.Screen name="Home" component={Home} />
                     <Stack.Screen name="CreateNote" component={CreateNote} />
                     <Stack.Screen name="CreateToDo" component={ToDoComponent} />
+                    <Stack.Screen name="CreateReminder" component={Reminder} />
                     <Stack.Screen name="Settings" component={Settings} />
                 </Stack.Navigator>
             </NavigationContainer>

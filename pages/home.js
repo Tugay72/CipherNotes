@@ -8,25 +8,43 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme_context';
 import ToDoComponent from './to-do';
 import ToDoBox from '../components/to_do_box';
+import ReminderBox from '../components/reminder_box';
+
+import { useIsFocused } from '@react-navigation/native';
+
 
 export default function Home({ navigation }) {
     const [notesData, setNotesData] = useState([]);
     const [toDoData, setToDoData] = useState([]);
+    const [reminderData, setReminderData] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [filteredNotes, setFilteredNotes] = useState([]);
     const [filteredTodos, setFilteredTodos] = useState([]);
+    const [filteredReminders, setFilteredReminders] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [section, setSection] = useState('notes');
 
     const menuAnimation = useState(new Animated.Value(-250))[0];
 
     const { currentTheme } = useTheme();
+    const isFocused = useIsFocused();
+
+    useEffect(() => {
+        if (isFocused) {
+            setIsMenuOpen(false);
+            closeMenu();
+        }
+    }, [isFocused]);
 
     useEffect(() => {
         loadNotes();
         loadToDos().then(todos => {
             setToDoData(todos);
             setFilteredTodos(todos);
+        });
+        loadReminders().then(reminders => {
+            setReminderData(reminders);
+            setFilteredReminders(reminders);
         });
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -82,7 +100,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveNoteByID = async (id, title = 'Title', content = 'Text', time = '/', date = '/', theme = 'dark') => {
+    const saveNoteByID = async (id, title = 'Untitled', content = 'Text', time = '/', date = '/', theme = 'dark') => {
         let updatedNotes = [...notesData];
         const index = updatedNotes.findIndex(note => note.id === id);
         if (title == '' || title == null) {
@@ -161,7 +179,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveToDoByID = async (id, contentJSON = [], title = 'Title', theme = 'dark') => {
+    const saveToDoByID = async (id, contentJSON = [], title = 'Untitled', theme = 'dark') => {
         let updatedToDos = [...toDoData];
         const index = updatedToDos.findIndex(todo => todo.id === id);
 
@@ -213,6 +231,83 @@ export default function Home({ navigation }) {
             deleteToDoByID
         })
     }
+
+    const saveReminders = async (reminders) => {
+        try {
+            await AsyncStorage.setItem('@my_reminders', JSON.stringify(reminders));
+        } catch (e) {
+            console.error('Hatırlatıcı kaydedilirken hata:', e);
+        }
+    };
+
+    const loadReminders = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('@my_reminders');
+            return jsonValue != null ? JSON.parse(jsonValue) : [];
+        } catch (e) {
+            console.error('Hatırlatıcı okunurken hata:', e);
+            return [];
+        }
+    };
+
+    const saveReminderByID = async (id, title = 'Untitled', date = new Date().toISOString(), theme = 'dark') => {
+        let updatedReminders = [...reminderData];
+        const index = updatedReminders.findIndex(reminder => reminder.id === id);
+
+        if (!title || title.trim() === '') {
+            title = 'Untitled';
+        }
+
+        const newReminder = {
+            id,
+            title,
+            date,
+            theme
+        };
+
+        if (index !== -1) {
+            updatedReminders[index] = newReminder;
+        } else {
+            const newId = Date.now().toString();
+            updatedReminders.push({ ...newReminder, id: newId });
+        }
+
+        setReminderData(updatedReminders);
+        setFilteredReminders(updatedReminders);
+        await saveReminders(updatedReminders);
+    };
+
+    const deleteReminderByID = async (id) => {
+        const updatedReminders = reminderData.filter(reminder => reminder.id !== id);
+        setReminderData(updatedReminders);
+        setFilteredReminders(updatedReminders);
+        await saveReminders(updatedReminders);
+    };
+
+    const filterReminders = () => {
+        if (searchText === '') {
+            setFilteredReminders(reminderData);
+        } else {
+            const filtered = reminderData.filter(reminder =>
+                reminder.title.toLowerCase().includes(searchText.toLowerCase())
+            );
+            setFilteredReminders(filtered);
+        }
+    };
+
+    const onCreateReminder = () => {
+        navigation.navigate('CreateReminder', {
+            id: '',
+            title: '',
+            date: '',
+            theme: '',
+            saveReminderByID,
+            deleteReminderByID
+        });
+    };
+
+
+
 
     return (
         <View style={[
@@ -467,8 +562,86 @@ export default function Home({ navigation }) {
 
                 </View>
 
-            ) : section === 'remindeer' ? (
-                <Text>A</Text>
+            ) : section === 'reminder' ? (
+                <View>
+
+                    <View style={[
+                        styles.topNavContainer,
+                        {
+                            backgroundColor: currentTheme.primaryColor
+                        }
+                    ]}>
+
+                        <View style={[
+                            styles.searchBar,
+                            {
+                                backgroundColor: currentTheme.containerBg
+                            }
+                        ]}>
+                            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
+                                <Text style={[
+                                    styles.buttonText,
+                                    {
+                                        color: currentTheme.secondaryColor
+                                    }
+                                ]}>☰</Text>
+                            </TouchableOpacity>
+
+                            <TextInput
+                                style={{
+                                    color: currentTheme.secondaryColor,
+                                    flex: 1,
+                                }}
+                                placeholder="Search reminder..."
+                                placeholderTextColor={currentTheme.secondaryColor}
+                                numberOfLines={1}
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                onBlur={handleSearchBlur}
+                            />
+                        </View>
+                    </View>
+
+                    <FlatList
+                        key='todos'
+                        data={filteredReminders}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => {
+                            return (
+                                <TouchableOpacity
+                                    style={styles.noteItem}
+                                    onPress={() => navigation.navigate('CreateReminder', {
+                                        id: item.id,
+                                        title: item.title,
+                                        date: item.date,
+                                        theme: item.theme,
+                                        saveReminderByID,
+                                        deleteReminderByID
+                                    })}
+                                >
+                                    <ReminderBox reminder={item} />
+                                </TouchableOpacity>
+                            )
+                        }}
+
+                        contentContainerStyle={styles.notes}
+                    />
+
+                    <TouchableOpacity style={[
+                        styles.createNoteButton,
+                        {
+                            backgroundColor: currentTheme.buttonBg
+                        }
+                    ]} onPress={onCreateReminder}>
+                        <Text style={[
+                            styles.buttonText,
+                            {
+                                color: currentTheme.secondaryColor
+                            }
+                        ]}>+</Text>
+                    </TouchableOpacity>
+
+                </View>
             ) : null}
 
 
