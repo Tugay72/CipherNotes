@@ -16,6 +16,8 @@ const Stack = createStackNavigator();
 
 import { ThemeProvider } from './theme_context';
 
+import { saveSecretKey } from './encryptionUtils';
+
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [storedPassword, setStoredPassword] = useState(null);
@@ -24,6 +26,7 @@ export default function App() {
 
 
     useEffect(() => {
+        saveSecretKey();
         const getStoredPassword = async () => {
             const password = await AsyncStorage.getItem('appPassword');
             setStoredPassword(password);
