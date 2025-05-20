@@ -1,10 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../theme_context';
 import { useIsFocused } from '@react-navigation/native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import NoteBox from '../components/note_box';
@@ -12,22 +13,24 @@ import ToDoBox from '../components/to_do_box';
 import ReminderBox from '../components/reminder_box';
 
 
-
 export default function Home({ navigation }) {
     const [notesData, setNotesData] = useState([]);
     const [toDoData, setToDoData] = useState([]);
     const [reminderData, setReminderData] = useState([]);
-    const [searchText, setSearchText] = useState('');
+
     const [filteredNotes, setFilteredNotes] = useState([]);
     const [filteredTodos, setFilteredTodos] = useState([]);
     const [filteredReminders, setFilteredReminders] = useState([]);
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [section, setSection] = useState('notes');
-
+    const [searchText, setSearchText] = useState('');
     const menuAnimation = useState(new Animated.Value(-250))[0];
 
-    const { currentTheme } = useTheme();
+
     const isFocused = useIsFocused();
+    const { currentTheme } = useTheme();
+    const styles = getStyles(currentTheme);
 
     useEffect(() => {
         if (isFocused) {
@@ -64,6 +67,37 @@ export default function Home({ navigation }) {
         filterReminders();
     }, [searchText, notesData, toDoData, reminderData]);
 
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+        const toValue = isMenuOpen ? -250 : 0;
+        Animated.timing(menuAnimation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const closeMenu = () => {
+        setIsMenuOpen(false);
+        Animated.timing(menuAnimation, {
+            toValue: -250,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handleSearchBlur = () => {
+
+        if (isMenuOpen) {
+            closeMenu();
+        }
+    };
+
+    const changeSection = (section) => {
+        setSection(section)
+    }
+
+    // NOTE FUNCTIONS
     const loadNotes = async () => {
         try {
             const storedNotes = await AsyncStorage.getItem('notes');
@@ -132,36 +166,7 @@ export default function Home({ navigation }) {
         navigation.navigate('CreateNote', { id: null, title: '', content: '', time: '', date: '', theme: '', fontSize: '', fontFamily: '', saveNoteByID, deleteNoteByID });
     };
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-        const toValue = isMenuOpen ? -250 : 0;
-        Animated.timing(menuAnimation, {
-            toValue,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const closeMenu = () => {
-        setIsMenuOpen(false);
-        Animated.timing(menuAnimation, {
-            toValue: -250,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const handleSearchBlur = () => {
-
-        if (isMenuOpen) {
-            closeMenu();
-        }
-    };
-
-    const changeSection = (section) => {
-        setSection(section)
-    }
-
+    // TODO FUNCTIONS
     const saveToDos = async (toDos) => {
         try {
             await AsyncStorage.setItem('@my_todos', JSON.stringify(toDos));
@@ -237,6 +242,7 @@ export default function Home({ navigation }) {
         })
     }
 
+    // REMINDER FUNCTIONS
     const saveReminders = async (reminders) => {
         try {
             await AsyncStorage.setItem('@my_reminders', JSON.stringify(reminders));
@@ -312,17 +318,9 @@ export default function Home({ navigation }) {
         });
     };
 
-
-
-
     return (
-        <View style={[
-            styles.container,
-            {
-                backgroundColor: currentTheme.primaryColor
-
-            }
-        ]}>
+        <View
+            style={styles.container}>
 
             {/* Side Menu with animation */}
             <Animated.View
@@ -330,31 +328,21 @@ export default function Home({ navigation }) {
                     styles.menu,
                     {
                         transform: [{ translateX: menuAnimation }],
-                        backgroundColor: currentTheme.containerBg,
+
                     }]}>
 
                 <TouchableOpacity style={styles.menuItem} onPress={closeMenu}>
                     <Text
-                        style={[
-                            styles.menuItemText,
-                            {
-                                color:
-                                    currentTheme.secondaryColor,
-                                fontSize: 32,
-
-                            }
-                        ]}>☰</Text>
+                        style={styles.menuItemText}
+                    >☰</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.menuItem}
                     onPress={() => navigation.navigate('Settings')}>
-                    <Text style={[
-                        styles.menuItemText,
-                        {
-                            color: currentTheme.secondaryColor
-                        }
-                    ]}>Settings</Text>
+                    <Text
+                        style={styles.menuItemText}
+                    >Settings</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -364,78 +352,55 @@ export default function Home({ navigation }) {
                 </TouchableWithoutFeedback>
             )}
 
-
             {/* Apps Section */}
             <View style={styles.appsSection}>
                 <TouchableOpacity onPress={() => changeSection('notes')}>
                     <MaterialCommunityIcons
-                        style={
+                        style={[
+                            styles.appsSectionButton,
                             {
-                                paddingHorizontal: 12,
-                                paddingVertical: 12,
-                                color: currentTheme.secondaryColor,
-                                fontSize: 24,
                                 backgroundColor: section === 'notes' ? currentTheme.buttonBg : "transparent",
-                                borderRadius: 16,
+                            }
 
-                            }}
+                        ]}
                         name="note-edit" size={24} color="#333" />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => changeSection('to-do')}>
                     <MaterialCommunityIcons
-                        style={
+                        style={[
+                            styles.appsSectionButton,
                             {
-                                paddingHorizontal: 12,
-                                paddingVertical: 12,
-                                color: currentTheme.secondaryColor,
-                                fontSize: 24,
                                 backgroundColor: section === 'to-do' ? currentTheme.buttonBg : "transparent",
-                                borderRadius: 16,
-
-                            }}
+                            }
+                        ]}
                         name="timeline-check-outline" size={24} color="#333" />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => changeSection('reminder')}>
                     <MaterialCommunityIcons
-                        style={
+                        style={[
+                            styles.appsSectionButton,
                             {
-                                paddingHorizontal: 12,
-                                paddingVertical: 12,
-                                color: currentTheme.secondaryColor,
-                                fontSize: 24,
                                 backgroundColor: section === 'reminder' ? currentTheme.buttonBg : "transparent",
-                                borderRadius: 16,
-
-                            }}
+                            }
+                        ]}
                         name="clock-alert" size={24} color="#333" />
                 </TouchableOpacity>
             </View>
 
             {section === 'notes' ? (
                 <View>
-                    <View style={[
-                        styles.topNavContainer,
-                        {
-                            backgroundColor:
-                                currentTheme.primaryColor
-                        }
-                    ]}>
+                    <View
+                        style={styles.topNavContainer}>
 
-                        <View style={[
-                            styles.searchBar,
-                            {
-                                backgroundColor: currentTheme.containerBg
-                            }
-                        ]}>
+                        <View
+                            style={styles.searchBar}
+                        >
                             <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-                                <Text style={[
-                                    styles.buttonText,
-                                    {
-                                        color: currentTheme.secondaryColor
-                                    }
-                                ]}>☰</Text>
+                                <Text
+                                    style={styles.buttonText}
+                                >☰</Text>
                             </TouchableOpacity>
 
                             <TextInput
@@ -484,45 +449,29 @@ export default function Home({ navigation }) {
                         columnWrapperStyle={styles.columnWrapper}
                     />
 
-
-
-                    <TouchableOpacity style={[
-                        styles.createNoteButton,
-                        {
-                            backgroundColor: currentTheme.buttonBg
-                        }
-                    ]} onPress={onCreateNote}>
-                        <Text style={[
-                            styles.buttonText,
-                            {
-                                color: currentTheme.secondaryColor
-                            }
-                        ]}>+</Text>
+                    <TouchableOpacity
+                        style={styles.createNoteButton}
+                        onPress={onCreateNote}
+                    >
+                        <Text
+                            style={styles.buttonText}
+                        >+</Text>
                     </TouchableOpacity>
                 </View>
             ) : section === 'to-do' ? (
                 <View>
 
-                    <View style={[
-                        styles.topNavContainer,
-                        {
-                            backgroundColor: currentTheme.primaryColor
-                        }
-                    ]}>
+                    <View
+                        style={styles.topNavContainer}>
 
-                        <View style={[
-                            styles.searchBar,
-                            {
-                                backgroundColor: currentTheme.containerBg
-                            }
-                        ]}>
+                        <View
+                            style={styles.searchBar}
+                        >
                             <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-                                <Text style={[
-                                    styles.buttonText,
-                                    {
-                                        color: currentTheme.secondaryColor
-                                    }
-                                ]}>☰</Text>
+                                <Text
+                                    style={styles.buttonText}
+                                >☰
+                                </Text>
                             </TouchableOpacity>
 
                             <TextInput
@@ -566,18 +515,13 @@ export default function Home({ navigation }) {
                         contentContainerStyle={styles.notes}
                     />
 
-                    <TouchableOpacity style={[
-                        styles.createNoteButton,
-                        {
-                            backgroundColor: currentTheme.buttonBg
-                        }
-                    ]} onPress={onCreateToDo}>
-                        <Text style={[
-                            styles.buttonText,
-                            {
-                                color: currentTheme.secondaryColor
-                            }
-                        ]}>+</Text>
+                    <TouchableOpacity
+                        style={styles.createNoteButton}
+                        onPress={onCreateToDo}
+                    >
+                        <Text
+                            style={styles.buttonText}
+                        >+</Text>
                     </TouchableOpacity>
 
                 </View>
@@ -585,26 +529,16 @@ export default function Home({ navigation }) {
             ) : section === 'reminder' ? (
                 <View>
 
-                    <View style={[
-                        styles.topNavContainer,
-                        {
-                            backgroundColor: currentTheme.primaryColor
-                        }
-                    ]}>
+                    <View style={styles.topNavContainer}>
 
-                        <View style={[
-                            styles.searchBar,
-                            {
-                                backgroundColor: currentTheme.containerBg
-                            }
-                        ]}>
-                            <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
-                                <Text style={[
-                                    styles.buttonText,
-                                    {
-                                        color: currentTheme.secondaryColor
-                                    }
-                                ]}>☰</Text>
+                        <View
+                            style={styles.searchBar}>
+                            <TouchableOpacity
+                                onPress={toggleMenu}
+                                style={styles.menuButton}>
+                                <Text
+                                    style={styles.buttonText}
+                                >☰</Text>
                             </TouchableOpacity>
 
                             <TextInput
@@ -646,35 +580,28 @@ export default function Home({ navigation }) {
                         contentContainerStyle={styles.notes}
                     />
 
-                    <TouchableOpacity style={[
-                        styles.createNoteButton,
-                        {
-                            backgroundColor: currentTheme.buttonBg
-                        }
-                    ]} onPress={onCreateReminder}>
-                        <Text style={[
-                            styles.buttonText,
-                            {
-                                color: currentTheme.secondaryColor
-                            }
-                        ]}>+</Text>
+                    <TouchableOpacity
+                        style={styles.createNoteButton}
+                        onPress={onCreateReminder}
+                    >
+                        <Text
+                            style={styles.buttonText}
+                        >+</Text>
                     </TouchableOpacity>
 
                 </View>
             ) : null}
-
-
-
 
             <StatusBar style={currentTheme.name === 'dark' ? "light" : "dark"} hidden={false} />
         </View>
     );
 
 }
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         paddingTop: 16,
         flex: 1,
+        backgroundColor: theme.primaryColor
     },
 
     appsSection: {
@@ -692,6 +619,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
+        backgroundColor: theme.primaryColor
+    },
+    appsSectionButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        color: theme.secondaryColor,
+        fontSize: 24,
+        borderRadius: 16,
     },
     searchBar: {
         flex: 1,
@@ -700,6 +635,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingLeft: 12,
         borderRadius: 8,
+        backgroundColor: theme.containerBg
     },
     notes: {
         paddingHorizontal: 16,
@@ -720,9 +656,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 50,
+        backgroundColor: theme.buttonBg
     },
     buttonText: {
         fontSize: 32,
+        color: theme.secondaryColor
     },
     menu: {
         flex: 1,
@@ -733,7 +671,7 @@ const styles = StyleSheet.create({
         width: 144,
         height: '100%',
         paddingLeft: 24,
-        backgroundColor: 'rgba(30, 30, 30, 0.95)',
+        backgroundColor: theme.containerBg,
         borderTopRightRadius: 20,
         borderBottomRightRadius: 20,
         shadowColor: '#000',
@@ -748,7 +686,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     menuItemText: {
-        fontSize: 18,
+        color: theme.secondaryColor,
+        fontSize: 32,
     },
     menuButton: {
         marginRight: 16,

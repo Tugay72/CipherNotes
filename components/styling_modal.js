@@ -4,14 +4,11 @@ import Slider from '@react-native-community/slider';
 
 const fontFamilies = [
     'system',
-    'monospace',       // ✔ Android & iOS
-    'sans-serif',      // ✔ Android (default Android font)
-    'sans-serif-light',
-    'sans-serif-condensed',
-    'sans-serif-medium',
-    'serif',           // ✔ Android & iOS (Times New Roman benzeri)
-    'Roboto',          // ✔ Android (varsayılan Android fontu)
-    'normal',          // sistem fontu (System yerine)
+    'monospace',
+    'sans-serif',
+    'serif',
+    'Roboto',
+    'normal',
 ];
 
 

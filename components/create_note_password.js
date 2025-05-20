@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Modal,
     View,
@@ -12,6 +12,8 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+
+    const styles = useMemo(() => getStyles(theme), [theme]);
 
     const handleSave = () => {
         if (!password || !confirmPassword) {
@@ -43,22 +45,15 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
             transparent={true}
             onRequestClose={handleClose}
         >
-            <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
-                <View style={[
-                    styles.modalContainer,
-                    { backgroundColor: theme.containerBg }
-                ]}>
-                    <Text style={[styles.title, { color: theme.secondaryColor }]}>Şifre Oluştur</Text>
+            <View style={styles.overlay}>
+                <View style={styles.container}>
+                    <Text style={styles.title}>Şifre Oluştur</Text>
 
                     <TextInput
                         placeholder="Şifre"
                         placeholderTextColor={theme.placeholderText}
-                        secureTextEntry={true}
-                        style={[styles.input, {
-                            backgroundColor: theme.buttonBg,
-                            color: theme.secondaryColor,
-                            borderColor: theme.secondaryColor + '44',
-                        }]}
+                        secureTextEntry
+                        style={styles.input}
                         value={password}
                         onChangeText={setPassword}
                     />
@@ -66,37 +61,21 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
                     <TextInput
                         placeholder="Şifreyi Tekrarla"
                         placeholderTextColor={theme.placeholderText}
-                        secureTextEntry={true}
-                        style={[styles.input, {
-                            backgroundColor: theme.buttonBg,
-                            color: theme.secondaryColor,
-                            borderColor: theme.secondaryColor + '44',
-                        }]}
+                        secureTextEntry
+                        style={styles.input}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                     />
 
-                    {error ? <Text style={[styles.errorText, { color: theme.errorColor }]}>{error}</Text> : null}
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     <View style={styles.buttonRow}>
-                        <TouchableOpacity
-                            onPress={handleClose}
-                            style={[
-                                styles.button,
-                                { backgroundColor: theme.buttonBg, borderWidth: 1, borderColor: theme.secondaryColor }
-                            ]}
-                        >
-                            <Text style={[styles.buttonText, { color: theme.secondaryColor }]}>İptal</Text>
+                        <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
+                            <Text style={styles.cancelText}>İptal</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            onPress={handleSave}
-                            style={[
-                                styles.button,
-                                { backgroundColor: theme.primaryColor }
-                            ]}
-                        >
-                            <Text style={[styles.buttonText, { color: theme.buttonText }]}>Kaydet</Text>
+                        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+                            <Text style={styles.saveText}>Kaydet</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -105,24 +84,27 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
     );
 }
 
-const styles = StyleSheet.create({
-    modalOverlay: {
+const getStyles = (theme) => StyleSheet.create({
+    overlay: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: 'rgba(0,0,0,0.6)',
     },
-    modalContainer: {
+    container: {
         borderRadius: 12,
         width: '100%',
         maxWidth: 400,
         padding: 20,
+        backgroundColor: theme.containerBg,
     },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 16,
         textAlign: 'center',
+        color: theme.secondaryColor,
     },
     input: {
         borderWidth: 1,
@@ -131,23 +113,44 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         marginBottom: 12,
         fontSize: 16,
+        backgroundColor: theme.buttonBg,
+        color: theme.secondaryColor,
+        borderColor: theme.secondaryColor + '44',
     },
-    errorText: {
+    error: {
         marginBottom: 12,
         textAlign: 'center',
+        color: theme.errorColor,
     },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
-    button: {
+    cancelButton: {
         flex: 1,
         paddingVertical: 12,
         borderRadius: 8,
         alignItems: 'center',
         marginHorizontal: 5,
+        backgroundColor: theme.buttonBg,
+        borderWidth: 1,
+        borderColor: theme.secondaryColor,
     },
-    buttonText: {
+    cancelText: {
+        color: theme.secondaryColor,
+        fontWeight: '600',
+        fontSize: 16,
+    },
+    saveButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 5,
+        backgroundColor: theme.primaryColor,
+    },
+    saveText: {
+        color: theme.buttonText,
         fontWeight: '600',
         fontSize: 16,
     },

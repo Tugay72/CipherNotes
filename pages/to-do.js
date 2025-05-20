@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    FlatList,
-    TouchableOpacity,
-    StyleSheet
-} from 'react-native';
+import React, { useState, useMemo } from 'react';
 import { useTheme } from '../theme_context';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import themes from "../theme";
 
@@ -17,12 +11,9 @@ import DeleteModal from '../components/delete_modal';
 const ToDoComponent = ({ navigation, route }) => {
 
     const { id, contentJSON, saveToDoByID, deleteToDoByID } = route.params;
-
-    const [editing, setEditing] = useState(false);
-
     const { currentTheme } = useTheme();
-    const [title, setTitle] = useState(route.params?.title || '');
 
+    const [title, setTitle] = useState(route.params?.title || '');
     const [task, setTask] = useState('');
     const [tasks, setTasks] = useState(() => {
         try {
@@ -32,14 +23,24 @@ const ToDoComponent = ({ navigation, route }) => {
             return [];
         }
     });
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [stylizeVisible, setStylizeVisible] = useState(false);
+
     const [fontSize, setFontSize] = useState(route.params?.fontSize || 16);
     const [fontFamily, setFontFamily] = useState(route.params?.fontFamily || 'system');
     const [bgImage, setBgImage] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
+    const styles = useMemo(() => getStyles(selectedTheme), [selectedTheme]);
+
+    {/* Navigating to homepage while saving the to-do*/ }
+    const goBack = async () => {
+        const contentJSON = JSON.stringify(tasks);
+        await saveToDoByID(id, contentJSON, title, selectedTheme);
+
+        navigation.navigate('Home');
+    };
 
     const applyTheme = (theme) => {
         setSelectedTheme(theme)
@@ -71,14 +72,6 @@ const ToDoComponent = ({ navigation, route }) => {
         setTasks(prev => prev.filter(t => t.id !== id));
     };
 
-    {/* Navigating to homepage while saving the to-do*/ }
-    const goBack = async () => {
-        const contentJSON = JSON.stringify(tasks);
-        await saveToDoByID(id, contentJSON, title, selectedTheme);
-
-        navigation.navigate('Home');
-    };
-
     const onDeleteInput = async () => {
         deleteToDo();
     }
@@ -94,7 +87,7 @@ const ToDoComponent = ({ navigation, route }) => {
 
 
     return (
-        <View style={[styles.container, { backgroundColor: selectedTheme.primaryColor }]}>
+        <View style={styles.container}>
 
             <View style={styles.topNavContainer}>
                 <TouchableOpacity onPress={goBack}>
@@ -138,7 +131,6 @@ const ToDoComponent = ({ navigation, route }) => {
                 style={[
                     styles.title,
                     {
-                        color: selectedTheme.titleColor,
                         fontFamily: fontFamily,
                         fontSize: fontSize * 1.5
                     }]}
@@ -146,21 +138,27 @@ const ToDoComponent = ({ navigation, route }) => {
 
             <View style={styles.inputContainer}>
                 <TextInput
-                    style={[styles.input, {
-                        backgroundColor: selectedTheme.containerBg,
-                        color: selectedTheme.secondaryColor,
-                        fontFamily: fontFamily
-                    }]}
+                    style={[
+                        styles.input,
+                        {
+                            fontFamily: fontFamily
+                        }
+                    ]}
                     placeholder="Add a task"
                     placeholderTextColor={selectedTheme.secondaryColor}
                     value={task}
                     onChangeText={setTask}
                 />
                 <TouchableOpacity
-                    style={[styles.addButton, { backgroundColor: selectedTheme.lowerOpacityText }]}
+                    style={styles.addButton}
                     onPress={addTask}
                 >
-                    <Text style={[styles.addButtonText, { color: selectedTheme.buttonText, fontFamily: fontFamily }]}>Add</Text>
+                    <Text style={[
+                        styles.addButtonText,
+                        {
+                            fontFamily: fontFamily
+                        }
+                    ]}>Add</Text>
                 </TouchableOpacity>
             </View>
 
@@ -168,7 +166,8 @@ const ToDoComponent = ({ navigation, route }) => {
                 data={tasks}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={[styles.taskItem, { backgroundColor: selectedTheme.containerBg }]}>
+                    <View
+                        style={styles.taskItem}>
                         <TouchableOpacity onPress={() => toggleCompleted(item.id)}>
                             <MaterialCommunityIcons
                                 name={item.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
@@ -233,11 +232,12 @@ const ToDoComponent = ({ navigation, route }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         padding: 12,
         paddingTop: 48,
         flex: 1,
+        backgroundColor: theme.primaryColor
     },
     topNavContainer: {
         flex: 1,
@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
         marginTop: 64,
         marginBottom: 12,
         fontWeight: 'bold',
+        color: theme.titleColor
     },
     inputContainer: {
         flexDirection: 'row',
@@ -265,15 +266,19 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 8,
         marginRight: 10,
+        backgroundColor: theme.containerBg,
+        color: theme.secondaryColor,
     },
     addButton: {
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 8,
+        backgroundColor: theme.lowerOpacityText
     },
     addButtonText: {
         fontSize: 16,
         fontWeight: '600',
+        color: theme.buttonText
     },
     taskItem: {
         flexDirection: 'row',
@@ -282,6 +287,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 8,
         borderWidth: 0.5,
+        backgroundColor: theme.containerBg
     },
     taskText: {
         fontSize: 16,

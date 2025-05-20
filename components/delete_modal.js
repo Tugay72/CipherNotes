@@ -1,4 +1,5 @@
 import { StyleSheet, Modal, View, Text, TouchableOpacity } from "react-native";
+import { useMemo } from "react";
 
 export default function DeleteModal({
     showDeleteModal,
@@ -7,6 +8,7 @@ export default function DeleteModal({
     onDeleteInput,
     message = 'Are you sure?'
 }) {
+    const styles = useMemo(() => getStyles(currentTheme), [currentTheme]);
 
     return (
         <Modal
@@ -15,17 +17,17 @@ export default function DeleteModal({
             transparent={true}
             onRequestClose={() => setShowDeleteModal(false)}
         >
-            <View style={styles.deleteModalOverlay}>
-                <View style={[styles.deleteModalContent, { backgroundColor: currentTheme.containerBg }]}>
-                    <Text style={[styles.deleteModalTitle, { color: currentTheme.secondaryColor }]}>Delete Note</Text>
-                    <Text style={[styles.deleteModalText, { color: '#ff5151' }]}>{message}</Text>
+            <View style={styles.overlay}>
+                <View style={styles.content}>
+                    <Text style={styles.title}>Delete Note</Text>
+                    <Text style={styles.message}>{message}</Text>
 
-                    <View style={styles.deleteModalButtons}>
+                    <View style={styles.buttons}>
                         <TouchableOpacity
                             onPress={() => setShowDeleteModal(false)}
-                            style={[styles.deleteModalButton, { backgroundColor: '#ccc' }]}
+                            style={styles.cancelButton}
                         >
-                            <Text style={styles.deleteModalButtonText}>Cancel</Text>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -33,9 +35,9 @@ export default function DeleteModal({
                                 onDeleteInput();
                                 setShowDeleteModal(false);
                             }}
-                            style={[styles.deleteModalButton, { backgroundColor: '#d32f2f' }]}
+                            style={styles.deleteButton}
                         >
-                            <Text style={[styles.deleteModalButtonText, { color: '#fff' }]}>Delete</Text>
+                            <Text style={styles.deleteButtonText}>Delete</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -44,52 +46,69 @@ export default function DeleteModal({
     )
 };
 
-const styles = StyleSheet.create({
-    deleteModalOverlay: {
+const getStyles = (theme) => StyleSheet.create({
+    overlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         justifyContent: 'center',
         alignItems: 'center',
     },
 
-    deleteModalContent: {
-        backgroundColor: '#fff',
+    content: {
+        backgroundColor: theme.containerBg,
         padding: 24,
         borderRadius: 12,
         width: '80%',
         alignItems: 'center',
     },
 
-    deleteModalTitle: {
+    title: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 12,
+        color: theme.secondaryColor,
     },
 
-    deleteModalText: {
+    message: {
         fontSize: 16,
         textAlign: 'center',
         marginBottom: 24,
-        color: '#555',
+        color: '#ff5151',
     },
 
-    deleteModalButtons: {
+    buttons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
     },
 
-    deleteModalButton: {
+    cancelButton: {
         flex: 1,
         paddingVertical: 10,
         borderRadius: 8,
         marginHorizontal: 6,
         alignItems: 'center',
+        backgroundColor: '#ccc',
     },
 
-    deleteModalButtonText: {
+    cancelButtonText: {
         fontSize: 16,
         fontWeight: '500',
+        color: '#000',
     },
 
-})
+    deleteButton: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginHorizontal: 6,
+        alignItems: 'center',
+        backgroundColor: '#d32f2f',
+    },
+
+    deleteButtonText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#fff',
+    },
+});

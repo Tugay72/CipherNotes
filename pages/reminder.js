@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    Platform
-} from 'react-native';
-
 import { useTheme } from '../theme_context';
+import * as Notifications from 'expo-notifications';
+
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CountdownTimer from '../components/countdown_timer';
-
 import DeleteModal from '../components/delete_modal';
 
-import * as Notifications from 'expo-notifications';
 
 const Reminder = ({ navigation, route }) => {
     const { id, saveReminderByID, deleteReminderByID } = route.params;
@@ -125,12 +118,13 @@ const Reminder = ({ navigation, route }) => {
 
     }
 
-
-
-
-
     return (
-        <View style={[styles.container, { backgroundColor: selectedTheme.primaryColor }]}>
+        <View style={[
+            styles.container,
+            {
+                backgroundColor: selectedTheme.primaryColor
+            }]}
+        >
             <View style={styles.topNavContainer}>
                 <TouchableOpacity onPress={goBack}>
                     <MaterialCommunityIcons
@@ -140,7 +134,12 @@ const Reminder = ({ navigation, route }) => {
                     />
                 </TouchableOpacity>
 
-                <View style={{ paddingLeft: 16, gap: 24, flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <View style={{
+                    paddingLeft: 16,
+                    gap: 24,
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end'
+                }}>
                     <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
                         <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
                     </TouchableOpacity>
@@ -160,15 +159,27 @@ const Reminder = ({ navigation, route }) => {
             <View style={styles.reminderSection}>
                 <CountdownTimer
                     targetDate={date}
-                    style={{ fontSize: 32, color: selectedTheme.secondaryColor, fontWeight: 'bold' }}
+                    style={{
+                        fontSize: 32,
+                        color: selectedTheme.secondaryColor,
+                        fontWeight: 'bold'
+                    }}
                 />
 
                 <View>
                     <TouchableOpacity
                         onPress={showDatepicker}
-                        style={[styles.dateButton, { backgroundColor: selectedTheme.buttonBg }]}
+                        style={[
+                            styles.dateButton,
+                            {
+                                backgroundColor: selectedTheme.buttonBg
+                            }]}
                     >
-                        <Text style={{ color: selectedTheme.buttonText }}>Select Date & Time</Text>
+                        <Text
+                            style={{
+                                color: selectedTheme.buttonText
+                            }}
+                        >Select Date & Time</Text>
                     </TouchableOpacity>
 
                     {showPicker && (
@@ -191,7 +202,11 @@ const Reminder = ({ navigation, route }) => {
                             alignItems: 'center',
                         }}
                     >
-                        <Text style={{ color: selectedTheme.primaryColor, fontWeight: 'bold' }}>Save Reminder</Text>
+                        <Text
+                            style={{
+                                color: selectedTheme.primaryColor,
+                                fontWeight: 'bold'
+                            }}>Save Reminder</Text>
                     </TouchableOpacity>
                 </View>
 
