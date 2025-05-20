@@ -3,6 +3,7 @@ import { useTheme } from '../theme_context';
 import { useIsFocused } from '@react-navigation/native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoJS from 'crypto-js';
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
@@ -97,12 +98,23 @@ export default function Home({ navigation }) {
         setSection(section)
     }
 
+    const encryptData = (data) => {
+        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
+        return ciphertext;
+    };
+
+    const decryptData = (ciphertext) => {
+        const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
+        const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        return decryptedData;
+    };
+
     // NOTE FUNCTIONS
     const loadNotes = async () => {
         try {
             const storedNotes = await AsyncStorage.getItem('notes');
             if (storedNotes) {
-                const notes = JSON.parse(storedNotes);
+                const notes = decryptData(storedNotes);
                 setNotesData(notes);
                 setFilteredNotes(notes);
             } else {
@@ -113,6 +125,7 @@ export default function Home({ navigation }) {
             console.error('Error loading notes:', error);
         }
     };
+
 
     const filterNotes = () => {
         if (searchText === '') {
@@ -127,7 +140,8 @@ export default function Home({ navigation }) {
 
     const saveNotes = async (newNotes) => {
         try {
-            await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
+            const encrypted = encryptData(newNotes);
+            await AsyncStorage.setItem('notes', encrypted);
             setNotesData(newNotes);
             setFilteredNotes(newNotes);
         } catch (error) {
@@ -169,7 +183,8 @@ export default function Home({ navigation }) {
     // TODO FUNCTIONS
     const saveToDos = async (toDos) => {
         try {
-            await AsyncStorage.setItem('@my_todos', JSON.stringify(toDos));
+            const encrypted = encryptData(toDos);
+            await AsyncStorage.setItem('@my_todos', encrypted);
         } catch (e) {
             console.error('ToDo kaydedilirken hata:', e);
         }
@@ -178,7 +193,7 @@ export default function Home({ navigation }) {
     const loadToDos = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('@my_todos');
-            return jsonValue != null ? JSON.parse(jsonValue) : [];
+            return jsonValue != null ? decryptData(jsonValue) : [];
         } catch (e) {
             console.error('ToDo okunurken hata:', e);
             return [];
@@ -245,7 +260,8 @@ export default function Home({ navigation }) {
     // REMINDER FUNCTIONS
     const saveReminders = async (reminders) => {
         try {
-            await AsyncStorage.setItem('@my_reminders', JSON.stringify(reminders));
+            const encrypted = encryptData(reminders);
+            await AsyncStorage.setItem('@my_reminders', encrypted);
         } catch (e) {
             console.error('Hatırlatıcı kaydedilirken hata:', e);
         }
@@ -254,7 +270,7 @@ export default function Home({ navigation }) {
     const loadReminders = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('@my_reminders');
-            return jsonValue != null ? JSON.parse(jsonValue) : [];
+            return jsonValue != null ? decryptData(jsonValue) : [];
         } catch (e) {
             console.error('Hatırlatıcı okunurken hata:', e);
             return [];
