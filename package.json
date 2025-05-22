@@ -44,7 +44,8 @@
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-vector-icons": "^10.2.0",
     "react-native-webview": "^13.13.5",
-    "react-native-zss-rich-text-editor": "^1.1.0"
+    "react-native-zss-rich-text-editor": "^1.1.0",
+    "expo-secure-store": "~14.0.1"
   },
   "devDependencies": {
     "@react-native-community/cli": "latest"

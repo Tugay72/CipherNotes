@@ -26,7 +26,6 @@ export default function App() {
 
 
     useEffect(() => {
-        saveSecretKey();
         const getStoredPassword = async () => {
             const password = await AsyncStorage.getItem('appPassword');
             setStoredPassword(password);

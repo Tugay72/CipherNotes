@@ -1,12 +1,11 @@
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 import { v4 as uuidv4 } from 'uuid';
-import 'react-native-get-random-values';
 
 export const saveSecretKey = async () => {
-    const existing = await Keychain.getGenericPassword();
+    const existing = await SecureStore.getItemAsync('secretKey');
     if (!existing) {
         const key = uuidv4();
-        await Keychain.setGenericPassword('encryption', key);
+        await SecureStore.setItemAsync('secretKey', key);
         console.log('Yeni şifreleme anahtarı kaydedildi.');
     } else {
         console.log('Şifreleme anahtarı zaten mevcut.');
@@ -14,9 +13,9 @@ export const saveSecretKey = async () => {
 };
 
 export const getSecretKey = async () => {
-    const credentials = await Keychain.getGenericPassword();
-    if (credentials) {
-        return credentials.password;
+    const key = await SecureStore.getItemAsync('secretKey');
+    if (key) {
+        return key;
     } else {
         console.warn('Anahtar alınamadı.');
         return null;

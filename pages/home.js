@@ -691,7 +691,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     menuItemText: {
         color: theme.secondaryColor,
-        fontSize: 32,
+        fontSize: 18,
     },
     menuButton: {
         marginRight: 16,

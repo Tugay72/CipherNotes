@@ -4,8 +4,7 @@ import { getSecretKey } from './encryptionUtils';
 
 export const saveEncryptedData = async (key, value) => {
     try {
-        const secretKey = await getSecretKey();
-        if (!secretKey) throw new Error('Anahtar yok');
+
 
         const encrypted = CryptoJS.AES.encrypt(JSON.stringify(value), secretKey).toString();
         await AsyncStorage.setItem(key, encrypted);
@@ -16,8 +15,7 @@ export const saveEncryptedData = async (key, value) => {
 
 export const loadEncryptedData = async (key) => {
     try {
-        const secretKey = await getSecretKey();
-        if (!secretKey) throw new Error('Anahtar yok');
+
 
         const encrypted = await AsyncStorage.getItem(key);
         if (!encrypted) return null;
