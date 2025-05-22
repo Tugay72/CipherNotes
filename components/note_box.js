@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     },
 
     text: {
+        maxHeight: 80,
         fontSize: 14,
     }
 });

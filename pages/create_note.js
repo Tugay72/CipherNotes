@@ -542,8 +542,8 @@ export default function CreateNote({ navigation, route }) {
                                     }
                                 }}
                                 ListFooterComponent={<View style={{ height: 320 }} />}
-                                showsVerticalScrollIndicator={false}
-                                scrollEnabled={false}
+                                showsVerticalScrollIndicator={true}
+                                scrollEnabled={true}
                             />
 
 
