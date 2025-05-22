@@ -1,30 +1,40 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'crypto-js';
-import { getSecretKey } from './encryptionUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const secretKey = CryptoJS.enc.Utf8.parse('1234567890123456');
+const iv = CryptoJS.enc.Utf8.parse('6543210987654321');
 
 export const saveEncryptedData = async (key, value) => {
     try {
+        const ciphertext = CryptoJS.AES.encrypt(
+            JSON.stringify(value),
+            secretKey,
+            { iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+        ).toString();
 
-
-        const encrypted = CryptoJS.AES.encrypt(JSON.stringify(value), secretKey).toString();
-        await AsyncStorage.setItem(key, encrypted);
+        await AsyncStorage.setItem(key, ciphertext);
     } catch (e) {
         console.error('Veri kaydedilirken hata:', e);
     }
 };
 
+
 export const loadEncryptedData = async (key) => {
     try {
-
-
         const encrypted = await AsyncStorage.getItem(key);
         if (!encrypted) return null;
 
-        const bytes = CryptoJS.AES.decrypt(encrypted, secretKey);
-        const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        return decrypted;
+        const decrypted = CryptoJS.AES.decrypt(
+            encrypted,
+            secretKey,
+            { iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+        );
+
+        const plainText = decrypted.toString(CryptoJS.enc.Utf8);
+        return JSON.parse(plainText);
     } catch (e) {
         console.error('Veri okunurken hata:', e);
         return null;
     }
 };
+

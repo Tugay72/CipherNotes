@@ -1,23 +1,18 @@
-import * as SecureStore from 'expo-secure-store';
-import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const saveSecretKey = async () => {
-    const existing = await SecureStore.getItemAsync('secretKey');
-    if (!existing) {
-        const key = uuidv4();
-        await SecureStore.setItemAsync('secretKey', key);
-        console.log('Yeni şifreleme anahtarı kaydedildi.');
-    } else {
-        console.log('Şifreleme anahtarı zaten mevcut.');
-    }
-};
+const KEY_STORAGE = 'app_secret_key';
 
-export const getSecretKey = async () => {
-    const key = await SecureStore.getItemAsync('secretKey');
-    if (key) {
-        return key;
-    } else {
-        console.warn('Anahtar alınamadı.');
-        return null;
+export async function getOrCreateKey() {
+    let savedKey = await AsyncStorage.getItem(KEY_STORAGE);
+
+    if (!savedKey) {
+        // Random 16 byte key oluştur
+        const newKey = CryptoJS.lib.WordArray.random(16);
+        // Base64 olarak kaydet
+        savedKey = CryptoJS.enc.Base64.stringify(newKey);
+        await AsyncStorage.setItem(KEY_STORAGE, savedKey);
     }
-};
+    // Base64’den WordArray’e çevirip geri döndür
+    return CryptoJS.enc.Base64.parse(savedKey);
+}
