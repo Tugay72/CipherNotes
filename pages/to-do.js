@@ -217,7 +217,7 @@ const ToDoComponent = ({ navigation, route }) => {
                                 }
                             ]}
                             placeholder="Add a task"
-                            placeholderTextColor={selectedTheme.secondaryColor}
+                            placeholderTextColor={selectedTheme.placeholderText}
                             value={task}
                             onChangeText={setTask}
                         />
@@ -230,7 +230,9 @@ const ToDoComponent = ({ navigation, route }) => {
                                 {
                                     fontFamily: fontFamily
                                 }
-                            ]}>Add</Text>
+                            ]}>
+                                <MaterialCommunityIcons name='plus' size={24} color="white" />
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
@@ -362,24 +364,28 @@ const getStyles = (theme) => StyleSheet.create({
     saveButton: {
         padding: 8,
     },
+
     inputContainer: {
         flexDirection: 'row',
-        marginBottom: 48,
+        alignItems: 'center',
+        marginBottom: 64,
+        height: 56,
+        borderRadius: 12,
+        backgroundColor: theme.containerBg,
+        paddingLeft: 8,
     },
     input: {
         flex: 1,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        borderRadius: 8,
-        marginRight: 10,
-        backgroundColor: theme.containerBg,
+        paddingHorizontal: 8,
+        paddingVertical: 6,
+        fontSize: 16,
         color: theme.secondaryColor,
     },
     addButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        padding: 16,
+        backgroundColor: theme.lowerOpacityText,
         borderRadius: 8,
-        backgroundColor: theme.lowerOpacityText
+        marginLeft: 8
     },
     addButtonText: {
         fontSize: 16,
@@ -389,25 +395,24 @@ const getStyles = (theme) => StyleSheet.create({
     taskItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 8,
-        borderWidth: 0.5,
-        backgroundColor: theme.containerBg
+        paddingHorizontal: 12,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: theme.containerBg,
+        marginBottom: 12,
+        height: 64,
     },
     taskText: {
         fontSize: 16,
     },
-
     allDoneBox: {
-        marginBottom: 12,
-        padding: 12,
-        borderRadius: 12,
-        backgroundColor: '#2ecc71',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8
+        padding: 16,
+        borderRadius: 12,
+        marginBottom: 16,
+        height: 56,
     },
     allDoneText: {
         color: 'white',
@@ -415,5 +420,6 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 16,
     }
 });
+
 
 export default ToDoComponent;
