@@ -126,8 +126,6 @@ const ToDoComponent = ({ navigation, route }) => {
                 maxLength={60}
                 numberOfLines={1}
                 onChangeText={setTitle}
-                onFocus={() => setEditing(true)}
-                onBlur={() => setEditing(false)}
                 style={[
                     styles.title,
                     {
