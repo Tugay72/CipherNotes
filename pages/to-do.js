@@ -49,9 +49,24 @@ const ToDoComponent = ({ navigation, route }) => {
                 backAction
             );
 
+<<<<<<< Updated upstream
             return () => backHandler.remove();
         }, [tasks, id, title, selectedTheme])
     );
+=======
+    const saveAndGoBack = async () => {
+        try {
+            const contentJSON = JSON.stringify(tasks);
+            await saveToDoByID(id, contentJSON, title, selectedTheme, fontSize, fontFamily, notePassword);
+            navigation.navigate('Home', {
+                shouldNavigateToTodo: true // bu sayede `to-do` sekmesi otomatik seçilir
+            });
+        } catch (error) {
+            console.error('Error saving todo:', error);
+        }
+    };
+
+>>>>>>> Stashed changes
 
 
 
