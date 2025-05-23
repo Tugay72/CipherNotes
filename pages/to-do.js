@@ -124,7 +124,7 @@ const ToDoComponent = ({ navigation, route }) => {
         if (completedCount === totalCount) {
             return {
                 icon: 'check-circle-outline',
-                bgColor: '#4CAF50', // Yeşil
+                bgColor: '#4CAF50',
                 message: 'Tüm görevler tamamlandı!',
             };
         }
@@ -132,14 +132,14 @@ const ToDoComponent = ({ navigation, route }) => {
         if (completedCount === 0) {
             return {
                 icon: 'alert-circle-outline',
-                bgColor: '#F44336', // Kırmızı
+                bgColor: '#F44336',
                 message: 'Hiç görev tamamlanmamış!',
             };
         }
 
         return {
             icon: 'progress-clock',
-            bgColor: '#FF9800', // Sarı
+            bgColor: '#FF9800',
             message: `${completedCount}/${totalCount} görev tamamlandı`,
         };
     };
@@ -237,7 +237,7 @@ const ToDoComponent = ({ navigation, route }) => {
                     </View>
 
                     <View style={[styles.allDoneBox, { backgroundColor: bgColor }]}>
-                        <MaterialCommunityIcons name={icon} size={24} color="white" />
+                        <MaterialCommunityIcons name={icon} size={20} color="white" />
                         <Text style={styles.allDoneText}>{message}</Text>
                     </View>
 
@@ -271,10 +271,13 @@ const ToDoComponent = ({ navigation, route }) => {
                                     {item.text}
                                 </Text>
 
-                                <TouchableOpacity onPress={() => removeTask(item.id)}>
+                                <TouchableOpacity
+
+                                    style={styles.deleteButton}
+                                    onPress={() => removeTask(item.id)}>
                                     <MaterialCommunityIcons
-                                        name="trash-can-outline"
-                                        size={24}
+                                        name="trash-can"
+                                        size={20}
                                         color={selectedTheme.secondaryColor}
                                     />
                                 </TouchableOpacity>
@@ -369,7 +372,7 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 64,
-        height: 56,
+        height: 64,
         borderRadius: 12,
         backgroundColor: theme.containerBg,
         paddingLeft: 8,
@@ -382,29 +385,43 @@ const getStyles = (theme) => StyleSheet.create({
         color: theme.secondaryColor,
     },
     addButton: {
-        padding: 16,
+        height: '100%',
+        width: '20%',
+        justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: theme.lowerOpacityText,
-        borderRadius: 8,
+        borderRadius: 16,
         marginLeft: 8
     },
     addButtonText: {
+        paddingHorizontal: 8,
         fontSize: 16,
-        fontWeight: '600',
         color: theme.buttonText
     },
     taskItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 14,
         borderRadius: 12,
         backgroundColor: theme.containerBg,
         marginBottom: 12,
+        paddingLeft: 12,
         height: 64,
     },
     taskText: {
         fontSize: 16,
     },
+
+    deleteButton: {
+        width: '20%',
+        height: '100%',
+        backgroundColor: theme.errorButtonBg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 14,
+        marginLeft: 8,
+        borderRadius: 16,
+    },
+
     allDoneBox: {
         flexDirection: 'row',
         alignItems: 'center',
