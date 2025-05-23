@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme_context';
 
-export default function NoteBox({ note }) {
+export default function NoteBox({ note, encryptedData }) {
     const { currentTheme } = useTheme();
 
     let contentBlocks = [];
@@ -19,11 +19,15 @@ export default function NoteBox({ note }) {
             <Text style={[styles.title, { color: savedTheme?.titleColor ?? currentTheme.titleColor }]}>
                 {note.title}
             </Text>
+
             <Text style={[styles.text, { color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor }]}>
-                {Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : ''}
+                {encryptedData
+                    ? '🔒'
+                    : Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : ''}
             </Text>
         </View>
     );
+
 }
 
 const styles = StyleSheet.create({

@@ -101,10 +101,11 @@ export default function Home({ navigation }) {
     // NOTE FUNCTIONS
     const loadNotes = async () => {
         try {
-            const notes = await loadEncryptedData('notes');
-            if (notes) {
-                setNotesData(notes);
-                setFilteredNotes(notes);
+            const notesWithEncrypted = await loadEncryptedData('notes');
+
+            if (notesWithEncrypted) {
+                setNotesData(notesWithEncrypted);
+                setFilteredNotes(notesWithEncrypted);
             } else {
                 setNotesData([]);
                 setFilteredNotes([]);
@@ -113,6 +114,8 @@ export default function Home({ navigation }) {
             console.error('Error loading notes:', error);
         }
     };
+
+
 
 
 
@@ -446,7 +449,11 @@ export default function Home({ navigation }) {
                                         deleteNoteByID
                                     })}
                             >
-                                <NoteBox note={item} />
+                                <NoteBox
+                                    note={item}
+                                    encryptedData={item.encryptedData}
+                                />
+
                             </TouchableOpacity>
                         )}
                         contentContainerStyle={styles.notes}

@@ -24,17 +24,26 @@ export const loadEncryptedData = async (key) => {
         const encrypted = await AsyncStorage.getItem(key);
         if (!encrypted) return null;
 
-        const decrypted = CryptoJS.AES.decrypt(
-            encrypted,
-            secretKey,
-            { iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
-        );
-
+        const decrypted = CryptoJS.AES.decrypt(encrypted, secretKey, {
+            iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
         const plainText = decrypted.toString(CryptoJS.enc.Utf8);
-        return JSON.parse(plainText);
+        const parsedNotes = JSON.parse(plainText); // this should be an array!
+
+        // Attach encryptedData only if note has a password
+        const notesWithEncrypted = parsedNotes.map(note => ({
+            ...note,
+            encryptedData: note.notePassword ? encrypted : null
+        }));
+
+        return notesWithEncrypted;
+
     } catch (e) {
         console.error('Veri okunurken hata:', e);
         return null;
     }
 };
+
 
