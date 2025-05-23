@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '../theme_context';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import themes from "../theme";
@@ -34,11 +34,23 @@ const ToDoComponent = ({ navigation, route }) => {
 
     const styles = useMemo(() => getStyles(selectedTheme), [selectedTheme]);
 
+    useEffect(() => {
+        const backAction = async () => {
+            await goBack();
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+
     {/* Navigating to homepage while saving the to-do*/ }
     const goBack = async () => {
         const contentJSON = JSON.stringify(tasks);
         await saveToDoByID(id, contentJSON, title, selectedTheme);
-
         navigation.navigate('Home');
     };
 

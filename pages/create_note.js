@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from '../theme_context';
 
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share, BackHandler } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -16,6 +16,7 @@ import DrawingCanvas from "../components/drawing_canvas";
 import DeleteModal from "../components/delete_modal";
 import PasswordModal from "../components/note_password";
 import CreatePasswordModal from "../components/create_note_password";
+
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -98,6 +99,25 @@ export default function CreateNote({ navigation, route }) {
     }, [contentBlocks]);
 
 
+
+    useEffect(() => {
+        const backAction = () => {
+            goBack();
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+
+    const goBack = async () => {
+        await saveNote();
+        navigation.navigate('Home');
+    };
     const getTextFromContentBlocks = (contentBlocks) => {
         return contentBlocks
             .filter(block => block.type === 'text')
@@ -130,10 +150,7 @@ export default function CreateNote({ navigation, route }) {
         setSelectedTheme(theme)
     };
 
-    const goBack = async () => {
-        await saveNote();
-        navigation.navigate('Home');
-    };
+
 
     const onBottomNavPress = (onPressFunction) => {
         if (Keyboard.isVisible()) {

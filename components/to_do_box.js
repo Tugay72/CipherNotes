@@ -16,8 +16,6 @@ export default function ToDoBox({ toDo }) {
     );
 }
 
-
-
 const styles = StyleSheet.create({
     container: {
         width: 360,
