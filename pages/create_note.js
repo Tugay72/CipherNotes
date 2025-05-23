@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from '../theme_context';
-
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share, BackHandler } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,7 +15,6 @@ import DrawingCanvas from "../components/drawing_canvas";
 import DeleteModal from "../components/delete_modal";
 import PasswordModal from "../components/note_password";
 import CreatePasswordModal from "../components/create_note_password";
-
 
 export default function CreateNote({ navigation, route }) {
     const { id } = route.params;
@@ -99,26 +97,6 @@ export default function CreateNote({ navigation, route }) {
     }, [contentBlocks]);
 
 
-
-    useEffect(() => {
-        const backAction = () => {
-            goBack();
-            return true;
-        };
-
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction
-        );
-
-        return () => backHandler.remove();
-    }, []);
-
-    const goBack = async () => {
-        await saveNote();
-        navigation.navigate('Home');
-    };
-
     const getTextFromContentBlocks = (contentBlocks) => {
         return contentBlocks
             .filter(block => block.type === 'text')
@@ -151,7 +129,32 @@ export default function CreateNote({ navigation, route }) {
         setSelectedTheme(theme)
     };
 
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
+            await saveNote();
+            navigation.navigate('Home', { screen: 'notes' });
+            return true;
+        });
 
+        return () => backHandler.remove();
+    }, [title, contentBlocks, selectedTheme, fontSize, fontFamily, notePassword]);
+
+    const saveNote = async () => {
+        const now = new Date();
+        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+        setTime(formattedTime);
+        setDate(formattedDate);
+
+        const contentJSON = JSON.stringify(contentBlocks);
+        await saveNoteByID(id, notePassword, title, contentJSON, formattedTime, formattedDate, selectedTheme, fontSize, fontFamily);
+        Keyboard.dismiss();
+    };
+
+    const goBack = async () => {
+        await saveNote();
+        navigation.navigate('Home', { screen: 'notes' });
+    };
 
     const onBottomNavPress = (onPressFunction) => {
         if (Keyboard.isVisible()) {
@@ -166,18 +169,6 @@ export default function CreateNote({ navigation, route }) {
         setEditing(false);
         setVisible(false);
         await saveNote();
-    };
-
-    const saveNote = async () => {
-        const now = new Date();
-        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-        setTime(formattedTime);
-        setDate(formattedDate);
-
-        const contentJSON = JSON.stringify(contentBlocks);
-        saveNoteByID(id, notePassword, title, contentJSON, formattedTime, formattedDate, selectedTheme, fontSize, fontFamily);
-        Keyboard.dismiss();
     };
 
     const onDeleteInput = async () => {
@@ -415,31 +406,32 @@ export default function CreateNote({ navigation, route }) {
                                                     resizeMode="cover"
                                                 />
 
-                                                <View style={styles.commonContentButtons}>
+                                                <View
+                                                    style={styles.contentButtons}>
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             setImageToZoom(item.content);
                                                             setImageModalVisible(true);
                                                         }}
-                                                        style={styles.commonButton}
+                                                        style={styles.contentShowButton}
                                                     >
-                                                        <Text style={styles.commonButtonText}>
+                                                        <Text style={styles.contentShowButtonText}>
                                                             Görüntüle
                                                         </Text>
                                                     </TouchableOpacity>
 
                                                     <TouchableOpacity
                                                         onPress={() => deleteImage(index)}
-                                                        style={styles.commonDeleteButton}
+                                                        style={styles.contentDeleteButton}
                                                     >
-                                                        <MaterialCommunityIcons
-                                                            name="trash-can"
-                                                            size={20}
-                                                            color={selectedTheme.secondaryColor}
+                                                        <Image
+                                                            source={require('../assets/trash_can_icon.png')}
+                                                            style={{ width: 20, height: 20 }}
+                                                            resizeMode="cover"
                                                         />
                                                     </TouchableOpacity>
-                                                </View>
 
+                                                </View>
                                             </View>
                                         );
                                     } else if (item.type === 'audio') {
@@ -454,7 +446,9 @@ export default function CreateNote({ navigation, route }) {
                                                         flexDirection: 'row',
                                                         width: '100%'
                                                     }}>
-                                                    <View style={styles.commonContentButtons}>
+                                                    <View
+                                                        style={styles.contentButtons}
+                                                    >
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 if (!sound) {
@@ -463,25 +457,33 @@ export default function CreateNote({ navigation, route }) {
                                                                     stopAudio();
                                                                 }
                                                             }}
-                                                            style={styles.commonButton}
-                                                        >
-                                                            <Text style={styles.commonButtonText}>
+                                                            style={[
+                                                                styles.voiceNote,
+                                                                {
+                                                                    width: '80%'
+                                                                }
+                                                            ]}>
+                                                            <Text style={styles.voicePlayButton}>
                                                                 {sound ? '■  ' + item.duration : '➤  ' + item.duration}
                                                             </Text>
                                                         </TouchableOpacity>
 
                                                         <TouchableOpacity
                                                             onPress={() => deleteAudio(index)}
-                                                            style={styles.commonDeleteButton}
-                                                        >
-                                                            <MaterialCommunityIcons
-                                                                name="trash-can"
-                                                                size={20}
-                                                                color={selectedTheme.secondaryColor}
+                                                            style={[
+                                                                styles.voiceNote,
+                                                                {
+                                                                    width: '20%'
+                                                                }
+                                                            ]}>
+                                                            <Image
+                                                                source={require('../assets/trash_can_icon.png')}
+                                                                style={{ width: 20, height: 20 }}
+                                                                resizeMode="cover"
                                                             />
+
                                                         </TouchableOpacity>
                                                     </View>
-
                                                 </View>
 
                                             </View>
@@ -497,15 +499,15 @@ export default function CreateNote({ navigation, route }) {
                                                     resizeMode="cover"
                                                 />
 
-                                                <View style={styles.commonContentButtons}>
+                                                <View style={styles.contentButtons}>
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             setImageToZoom(item.content)
                                                             setImageModalVisible(true);
                                                         }}
-                                                        style={styles.commonButton}
+                                                        style={styles.contentShowButton}
                                                     >
-                                                        <Text style={styles.commonButtonText}>
+                                                        <Text style={styles.contentShowButtonText}>
                                                             Görüntüle
                                                         </Text>
                                                     </TouchableOpacity>
@@ -513,9 +515,13 @@ export default function CreateNote({ navigation, route }) {
 
                                                     <TouchableOpacity
                                                         onPress={() => deleteImage(index)}
-                                                        style={styles.commonDeleteButton}
+                                                        style={styles.contentDeleteButton}
                                                     >
-                                                        <MaterialCommunityIcons name="trash-can" size={20} color={selectedTheme.secondaryColor} />
+                                                        <Image
+                                                            source={require('../assets/trash_can_icon.png')}
+                                                            style={{ width: 20, height: 20 }}
+                                                            resizeMode="cover"
+                                                        />
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
@@ -794,39 +800,35 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 10,
     },
 
-    commonContentButtons: {
+    contentButtons: {
         flexDirection: 'row',
-        backgroundColor: theme.buttonBg,
-        borderRadius: 20,
+        backgroundColor: '#f2f2f2',
+        borderRadius: 12,
         overflow: 'hidden',
-        width: '100%',
+        width: '100%'
     },
 
-    commonButton: {
+    contentShowButton: {
         flex: 1,
-        paddingVertical: 14,
+        padding: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.buttonBg,
+        backgroundColor: theme.buttonBg
     },
 
-    commonButtonText: {
+    contentShowButtonText: {
         color: theme.buttonText,
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold'
     },
 
-    commonDeleteButton: {
+    contentDeleteButton: {
         width: 60,
         backgroundColor: theme.errorButtonBg,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 14,
-        marginLeft: 8,
-        borderRadius: 16,
+        padding: 12,
     },
-
-
 
     // STYLIZE MODAL
     modalOverlay: {
@@ -922,10 +924,25 @@ const getStyles = (theme) => StyleSheet.create({
         borderColor: '#00000033',
     },
 
+
+    voiceNote: {
+        paddingVertical: 8,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+
+    },
     voiceNoteTitle: {
         color: theme.secondaryColor,
         fontSize: 16,
         marginBottom: 10
+    },
+
+    voicePlayButton: {
+        color: '#000',
+        fontSize: 18,
+        fontWeight: 'bold'
     },
 
     voiceModalOverlay: {
@@ -986,4 +1003,3 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 10,
     },
 });
-

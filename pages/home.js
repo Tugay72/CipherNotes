@@ -14,7 +14,7 @@ import ToDoBox from '../components/to_do_box';
 import ReminderBox from '../components/reminder_box';
 
 
-export default function Home({ navigation }) {
+export default function Home({ navigation, route }) {
     const [notesData, setNotesData] = useState([]);
     const [toDoData, setToDoData] = useState([]);
     const [reminderData, setReminderData] = useState([]);
@@ -56,17 +56,30 @@ export default function Home({ navigation }) {
                 closeMenu();
                 return true;
             }
+            if (section !== 'notes') {
+                setSection('notes');
+                return true;
+            }
             return false;
         });
 
         return () => backHandler.remove();
-    }, [isMenuOpen]);
+    }, [isMenuOpen, section]);
 
     useEffect(() => {
         filterNotes();
         filterTodos();
         filterReminders();
     }, [searchText, notesData, toDoData, reminderData]);
+
+    useEffect(() => {
+        if (route.params?.shouldNavigateToTodo) {
+            setSection('to-do');
+        }
+        if (route.params?.shouldNavigateToReminder) {
+            setSection('reminder');
+        }
+    }, [route.params?.shouldNavigateToTodo, route.params?.shouldNavigateToReminder]);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -101,11 +114,10 @@ export default function Home({ navigation }) {
     // NOTE FUNCTIONS
     const loadNotes = async () => {
         try {
-            const notesWithEncrypted = await loadEncryptedData('notes');
-
-            if (notesWithEncrypted) {
-                setNotesData(notesWithEncrypted);
-                setFilteredNotes(notesWithEncrypted);
+            const notes = await loadEncryptedData('notes');
+            if (notes) {
+                setNotesData(notes);
+                setFilteredNotes(notes);
             } else {
                 setNotesData([]);
                 setFilteredNotes([]);
@@ -114,8 +126,6 @@ export default function Home({ navigation }) {
             console.error('Error loading notes:', error);
         }
     };
-
-
 
 
 
@@ -191,7 +201,7 @@ export default function Home({ navigation }) {
         }
     };
 
-    const saveToDoByID = async (id, contentJSON = [], title = 'Untitled', theme = '', fontSize = '', fontFamily = '') => {
+    const saveToDoByID = async (id, contentJSON = [], title = 'Untitled', theme = '', fontSize = '', fontFamily = '', notePassword = '') => {
         let updatedToDos = [...toDoData];
         const index = updatedToDos.findIndex(todo => todo.id === id);
 
@@ -205,7 +215,8 @@ export default function Home({ navigation }) {
             contentJSON: typeof contentJSON === 'string' ? contentJSON : JSON.stringify(contentJSON),
             theme: theme,
             fontSize,
-            fontFamily
+            fontFamily,
+            notePassword
         };
 
         if (index !== -1) {
@@ -449,11 +460,7 @@ export default function Home({ navigation }) {
                                         deleteNoteByID
                                     })}
                             >
-                                <NoteBox
-                                    note={item}
-                                    encryptedData={item.encryptedData}
-                                />
-
+                                <NoteBox note={item} />
                             </TouchableOpacity>
                         )}
                         contentContainerStyle={styles.notes}
@@ -514,6 +521,7 @@ export default function Home({ navigation }) {
                                         theme: item.theme,
                                         fontSize: item.fontSize,
                                         fontFamily: item.fontFamily,
+                                        notePassword: item.notePassword,
                                         saveToDoByID,
                                         deleteToDoByID
                                     })}
