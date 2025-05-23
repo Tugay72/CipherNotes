@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme_context';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 
@@ -34,18 +35,26 @@ const ToDoComponent = ({ navigation, route }) => {
 
     const styles = useMemo(() => getStyles(selectedTheme), [selectedTheme]);
 
-    useEffect(() => {
-        const backAction = async () => {
-            await goBack();
-            return true;
-        };
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction
-        );
+    useFocusEffect(
+        React.useCallback(() => {
+            const backAction = async () => {
+                const contentJSON = JSON.stringify(tasks);
+                await saveToDoByID(id, contentJSON, title, selectedTheme);
+                navigation.navigate('Home');
+                return true;
+            };
 
-        return () => backHandler.remove();
-    }, []);
+            const backHandler = BackHandler.addEventListener(
+                'hardwareBackPress',
+                backAction
+            );
+
+            return () => backHandler.remove();
+        }, [tasks, id, title, selectedTheme])
+    );
+
+
+
 
     {/* Navigating to homepage while saving the to-do*/ }
     const goBack = async () => {
@@ -53,6 +62,7 @@ const ToDoComponent = ({ navigation, route }) => {
         await saveToDoByID(id, contentJSON, title, selectedTheme);
         navigation.navigate('Home');
     };
+
 
     const applyTheme = (theme) => {
         setSelectedTheme(theme)
