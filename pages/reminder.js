@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../theme_context';
 import * as Notifications from 'expo-notifications';
+import { BackHandler } from 'react-native';
 
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -27,18 +28,34 @@ const Reminder = ({ navigation, route }) => {
         registerForPushNotificationsAsync();
     }, []);
 
-    const goBack = async () => {
-        const saved = await saveReminderByID(id, title, date.toISOString(), selectedTheme);
-        if (saved) {
-            await scheduleNotification(date, title);
-        }
-        navigation.navigate('Home');
-    };
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
+            await saveAndGoBack();
+            return true;
+        });
 
+        return () => backHandler.remove();
+    }, [title, date, selectedTheme]);
+
+    const saveAndGoBack = async () => {
+        try {
+            const saved = await saveReminderByID(id, title, date.toISOString(), selectedTheme);
+            if (saved) {
+                await scheduleNotification(date, title);
+            }
+            navigation.navigate('Home', {
+                shouldNavigateToReminder: true
+            });
+        } catch (error) {
+            console.error('Error saving reminder:', error);
+        }
+    };
 
     const onDeleteInput = async () => {
         await deleteReminderByID(id);
-        navigation.navigate('Home');
+        navigation.navigate('Home', {
+            shouldNavigateToReminder: true
+        });
     };
 
     // DateTimePicker event handler
@@ -126,7 +143,7 @@ const Reminder = ({ navigation, route }) => {
             }]}
         >
             <View style={styles.topNavContainer}>
-                <TouchableOpacity onPress={goBack}>
+                <TouchableOpacity onPress={saveAndGoBack}>
                     <MaterialCommunityIcons
                         name="arrow-left-thick"
                         size={24}
@@ -193,7 +210,7 @@ const Reminder = ({ navigation, route }) => {
                     )}
 
                     <TouchableOpacity
-                        onPress={goBack}
+                        onPress={saveAndGoBack}
                         style={{
                             marginTop: 16,
                             backgroundColor: selectedTheme.secondaryColor,

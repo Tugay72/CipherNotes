@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '../theme_context';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import themes from "../theme";
 
 import StylingModal from '../components/styling_modal';
 import DeleteModal from '../components/delete_modal';
+import CreatePasswordModal from '../components/create_note_password';
+import PasswordModal from '../components/note_password';
 
 const ToDoComponent = ({ navigation, route }) => {
 
@@ -26,6 +28,10 @@ const ToDoComponent = ({ navigation, route }) => {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [stylizeVisible, setStylizeVisible] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [showCreatePasswordModal, setShowCreatePasswordModal] = useState(false);
+    const [notePassword, setNotePassword] = useState(route.params?.notePassword || null);
+    const [unlocked, setUnlocked] = useState(route.params?.notePassword ? false : true);
 
     const [fontSize, setFontSize] = useState(route.params?.fontSize || 16);
     const [fontFamily, setFontFamily] = useState(route.params?.fontFamily || 'system');
@@ -34,12 +40,30 @@ const ToDoComponent = ({ navigation, route }) => {
 
     const styles = useMemo(() => getStyles(selectedTheme), [selectedTheme]);
 
-    {/* Navigating to homepage while saving the to-do*/ }
-    const goBack = async () => {
-        const contentJSON = JSON.stringify(tasks);
-        await saveToDoByID(id, contentJSON, title, selectedTheme);
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
+            await saveAndGoBack();
+            return true;
+        });
 
-        navigation.navigate('Home');
+        return () => backHandler.remove();
+    }, [tasks, title, selectedTheme, fontSize, fontFamily, notePassword]);
+
+    const saveAndGoBack = async () => {
+        try {
+            const contentJSON = JSON.stringify(tasks);
+            await saveToDoByID(id, contentJSON, title, selectedTheme, fontSize, fontFamily, notePassword);
+            navigation.navigate('Home', {
+                shouldNavigateToTodo: true // bu sayede `to-do` sekmesi otomatik seçilir
+            });
+        } catch (error) {
+            console.error('Error saving todo:', error);
+        }
+    };
+    
+
+    const goBack = async () => {
+        await saveAndGoBack();
     };
 
     const applyTheme = (theme) => {
@@ -88,147 +112,170 @@ const ToDoComponent = ({ navigation, route }) => {
 
     return (
         <View style={styles.container}>
-
-            <View style={styles.topNavContainer}>
-                <TouchableOpacity onPress={goBack}>
-                    <MaterialCommunityIcons
-                        name="arrow-left-thick"
-                        size={24}
-                        style={{ color: selectedTheme.secondaryColor }}
-                    />
-                </TouchableOpacity>
-
-                <View
-                    style={{
-                        paddingLeft: 16,
-                        gap: 24,
-                        flexDirection: 'row',
-                        justifyContent: 'flex-end',
-                    }}>
-                    <TouchableOpacity onPress={() => console.log('Add password')}>
-                        <MaterialCommunityIcons name="lock-outline" size={24} color={selectedTheme.placeholderText} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => setStylizeVisible(true)}>
-                        <MaterialCommunityIcons name="palette-outline" size={24} color={selectedTheme.placeholderText} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
-                        <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <TextInput
-                placeholder="Title"
-                placeholderTextColor={selectedTheme.placeholderText}
-                value={title}
-                maxLength={60}
-                numberOfLines={1}
-                onChangeText={setTitle}
-                onFocus={() => setEditing(true)}
-                onBlur={() => setEditing(false)}
-                style={[
-                    styles.title,
-                    {
-                        fontFamily: fontFamily,
-                        fontSize: fontSize * 1.5
-                    }]}
-            />
-
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={[
-                        styles.input,
-                        {
-                            fontFamily: fontFamily
-                        }
-                    ]}
-                    placeholder="Add a task"
-                    placeholderTextColor={selectedTheme.secondaryColor}
-                    value={task}
-                    onChangeText={setTask}
-                />
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={addTask}
-                >
-                    <Text style={[
-                        styles.addButtonText,
-                        {
-                            fontFamily: fontFamily
-                        }
-                    ]}>Add</Text>
-                </TouchableOpacity>
-            </View>
-
-            <FlatList
-                data={tasks}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <View
-                        style={styles.taskItem}>
-                        <TouchableOpacity onPress={() => toggleCompleted(item.id)}>
+            {unlocked ? (
+                <>
+                    <View style={styles.topNavContainer}>
+                        <TouchableOpacity onPress={goBack}>
                             <MaterialCommunityIcons
-                                name={item.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                name="arrow-left-thick"
                                 size={24}
-                                color={selectedTheme.secondaryColor}
-                                style={{ marginRight: 10 }}
+                                style={{ color: selectedTheme.secondaryColor }}
                             />
                         </TouchableOpacity>
 
-                        <Text
+                        <View
+                            style={{
+                                paddingLeft: 16,
+                                gap: 24,
+                                flexDirection: 'row',
+                                justifyContent: 'flex-end',
+                            }}>
+                            <TouchableOpacity onPress={() => setShowCreatePasswordModal(true)}>
+                                <MaterialCommunityIcons name="lock-outline" size={24} color={selectedTheme.placeholderText} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => setStylizeVisible(true)}>
+                                <MaterialCommunityIcons name="palette-outline" size={24} color={selectedTheme.placeholderText} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
+                                <MaterialCommunityIcons name="delete-outline" size={24} color={selectedTheme.errorColor} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View style={styles.titleContainer}>
+                        <TextInput
+                            placeholder="Title"
+                            placeholderTextColor={selectedTheme.placeholderText}
+                            value={title}
+                            maxLength={60}
+                            numberOfLines={1}
+                            onChangeText={setTitle}
                             style={[
-                                styles.taskText,
+                                styles.title,
                                 {
-                                    color: selectedTheme.secondaryColor,
-                                    textDecorationLine: item.completed ? 'line-through' : 'none',
-                                    flex: 1,
+                                    fontFamily: fontFamily,
+                                    fontSize: fontSize * 1.5
+                                }]}
+                        />
+                        <TouchableOpacity onPress={goBack} style={styles.saveButton}>
+                            <MaterialCommunityIcons name="check" size={24} color={selectedTheme.secondaryColor} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={[
+                                styles.input,
+                                {
                                     fontFamily: fontFamily
                                 }
                             ]}
+                            placeholder="Add a task"
+                            placeholderTextColor={selectedTheme.secondaryColor}
+                            value={task}
+                            onChangeText={setTask}
+                        />
+                        <TouchableOpacity
+                            style={styles.addButton}
+                            onPress={addTask}
                         >
-                            {item.text}
-                        </Text>
-
-                        <TouchableOpacity onPress={() => removeTask(item.id)}>
-                            <MaterialCommunityIcons
-                                name="trash-can-outline"
-                                size={24}
-                                color={selectedTheme.secondaryColor}
-                            />
+                            <Text style={[
+                                styles.addButtonText,
+                                {
+                                    fontFamily: fontFamily
+                                }
+                            ]}>Add</Text>
                         </TouchableOpacity>
                     </View>
-                )}
-            />
 
-            {/* Styling Modal */}
-            <StylingModal
-                stylizeVisible={stylizeVisible}
-                setStylizeVisible={setStylizeVisible}
-                fontSize={fontSize}
-                setFontSize={setFontSize}
-                fontFamily={fontFamily}
-                setFontFamily={setFontFamily}
-                bgImage={bgImage}
-                setBgImage={setBgImage}
-                bgColor={selectedTheme.primaryColor}
-                selectedTheme={selectedTheme}
-                setSelectedTheme={setSelectedTheme}
-                applyTheme={applyTheme}
-                themes={themes}>
+                    <FlatList
+                        data={tasks}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <View
+                                style={styles.taskItem}>
+                                <TouchableOpacity onPress={() => toggleCompleted(item.id)}>
+                                    <MaterialCommunityIcons
+                                        name={item.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                        size={24}
+                                        color={selectedTheme.secondaryColor}
+                                        style={{ marginRight: 10 }}
+                                    />
+                                </TouchableOpacity>
 
-            </StylingModal>
+                                <Text
+                                    style={[
+                                        styles.taskText,
+                                        {
+                                            color: selectedTheme.secondaryColor,
+                                            textDecorationLine: item.completed ? 'line-through' : 'none',
+                                            flex: 1,
+                                            fontFamily: fontFamily
+                                        }
+                                    ]}
+                                >
+                                    {item.text}
+                                </Text>
 
-            {/* Delete To-Do Modal */}
-            <DeleteModal
-                showDeleteModal={showDeleteModal}
-                setShowDeleteModal={setShowDeleteModal}
-                currentTheme={currentTheme}
-                onDeleteInput={onDeleteInput}
-                message={"Are you sure you want to delete this note?"}
-            ></DeleteModal>
-        </View >
+                                <TouchableOpacity onPress={() => removeTask(item.id)}>
+                                    <MaterialCommunityIcons
+                                        name="trash-can-outline"
+                                        size={24}
+                                        color={selectedTheme.secondaryColor}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    />
+
+                    {/* Styling Modal */}
+                    <StylingModal
+                        stylizeVisible={stylizeVisible}
+                        setStylizeVisible={setStylizeVisible}
+                        fontSize={fontSize}
+                        setFontSize={setFontSize}
+                        fontFamily={fontFamily}
+                        setFontFamily={setFontFamily}
+                        bgImage={bgImage}
+                        setBgImage={setBgImage}
+                        bgColor={selectedTheme.primaryColor}
+                        selectedTheme={selectedTheme}
+                        setSelectedTheme={setSelectedTheme}
+                        applyTheme={applyTheme}
+                        themes={themes}>
+                    </StylingModal>
+
+                    {/* Create Password Modal */}
+                    <CreatePasswordModal
+                        visible={showCreatePasswordModal}
+                        onClose={() => setShowCreatePasswordModal(false)}
+                        onSave={(newPassword) => setNotePassword(newPassword)}
+                        theme={selectedTheme}
+                    />
+
+                    {/* Delete To-Do Modal */}
+                    <DeleteModal
+                        showDeleteModal={showDeleteModal}
+                        setShowDeleteModal={setShowDeleteModal}
+                        currentTheme={currentTheme}
+                        onDeleteInput={onDeleteInput}
+                        message={"Are you sure you want to delete this note?"}
+                    />
+                </>
+            ) : (
+                <PasswordModal
+                    visible={true}
+                    onClose={() => {
+                        navigation.navigate('Home');
+                    }}
+                    onUnlock={() => setUnlocked(true)}
+                    notePassword={notePassword}
+                    theme={selectedTheme}
+                />
+            )}
+        </View>
     );
 };
 
@@ -250,11 +297,20 @@ const getStyles = (theme) => StyleSheet.create({
         top: 48,
         left: 8,
     },
-    title: {
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginTop: 64,
         marginBottom: 12,
+        gap: 8,
+    },
+    title: {
+        flex: 1,
         fontWeight: 'bold',
         color: theme.titleColor
+    },
+    saveButton: {
+        padding: 8,
     },
     inputContainer: {
         flexDirection: 'row',

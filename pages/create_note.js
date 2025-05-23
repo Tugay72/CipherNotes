@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useTheme } from '../theme_context';
-
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share, BackHandler } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -130,9 +129,31 @@ export default function CreateNote({ navigation, route }) {
         setSelectedTheme(theme)
     };
 
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
+            await saveNote();
+            navigation.navigate('Home', { screen: 'notes' });
+            return true;
+        });
+
+        return () => backHandler.remove();
+    }, [title, contentBlocks, selectedTheme, fontSize, fontFamily, notePassword]);
+
+    const saveNote = async () => {
+        const now = new Date();
+        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+        setTime(formattedTime);
+        setDate(formattedDate);
+
+        const contentJSON = JSON.stringify(contentBlocks);
+        await saveNoteByID(id, notePassword, title, contentJSON, formattedTime, formattedDate, selectedTheme, fontSize, fontFamily);
+        Keyboard.dismiss();
+    };
+
     const goBack = async () => {
         await saveNote();
-        navigation.navigate('Home');
+        navigation.navigate('Home', { screen: 'notes' });
     };
 
     const onBottomNavPress = (onPressFunction) => {
@@ -148,18 +169,6 @@ export default function CreateNote({ navigation, route }) {
         setEditing(false);
         setVisible(false);
         await saveNote();
-    };
-
-    const saveNote = async () => {
-        const now = new Date();
-        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-        setTime(formattedTime);
-        setDate(formattedDate);
-
-        const contentJSON = JSON.stringify(contentBlocks);
-        saveNoteByID(id, notePassword, title, contentJSON, formattedTime, formattedDate, selectedTheme, fontSize, fontFamily);
-        Keyboard.dismiss();
     };
 
     const onDeleteInput = async () => {

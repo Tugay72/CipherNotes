@@ -2,32 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme_context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import CryptoJS from 'crypto-js';
 
 export default function NoteBox({ note }) {
     const { currentTheme } = useTheme();
 
     const savedTheme = note.theme;
     const isEncrypted = note.notePassword && note.notePassword.length > 0;
-
-    const getEncryptedContent = () => {
-        try {
-            const contentBlocks = JSON.parse(note.content);
-            const content = Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : '';
-            const secretKey = CryptoJS.enc.Utf8.parse('1234567890123456');
-            const iv = CryptoJS.enc.Utf8.parse('6543210987654321');
-            
-            const encrypted = CryptoJS.AES.encrypt(
-                content,
-                secretKey,
-                { iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
-            ).toString();
-            
-            return encrypted;
-        } catch (e) {
-            return '';
-        }
-    };
 
     return (
         <View style={[styles.container, { backgroundColor: savedTheme?.containerBg ?? currentTheme.containerBg }]}>
@@ -38,7 +18,7 @@ export default function NoteBox({ note }) {
                 <View style={styles.encryptedContent}>
                     <MaterialCommunityIcons name="lock" size={24} color={savedTheme?.secondaryColor ?? currentTheme.secondaryColor} />
                     <Text style={[styles.encryptedText, { color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor }]}>
-                        {getEncryptedContent()}
+                        Şifrelenmiş Not
                     </Text>
                 </View>
             ) : (
@@ -84,8 +64,7 @@ const styles = StyleSheet.create({
     },
 
     encryptedText: {
-        fontSize: 12,
+        fontSize: 16,
         textAlign: 'center',
-        fontFamily: 'monospace',
     }
 });
