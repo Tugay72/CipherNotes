@@ -6,7 +6,7 @@ const themes = [
         placeholderText: "#555555",
         lowerOpacityText: "#64B5F6",
         containerBg: "#1E1E1E",
-        buttonBg: "#333333",
+        buttonBg: "#222222",
         errorButtonBg: "#D32F2F",
         buttonText: "#FFFFFF",
         errorColor: "#E53935",

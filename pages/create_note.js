@@ -118,6 +118,7 @@ export default function CreateNote({ navigation, route }) {
         await saveNote();
         navigation.navigate('Home');
     };
+
     const getTextFromContentBlocks = (contentBlocks) => {
         return contentBlocks
             .filter(block => block.type === 'text')
@@ -414,32 +415,31 @@ export default function CreateNote({ navigation, route }) {
                                                     resizeMode="cover"
                                                 />
 
-                                                <View
-                                                    style={styles.contentButtons}>
+                                                <View style={styles.commonContentButtons}>
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             setImageToZoom(item.content);
                                                             setImageModalVisible(true);
                                                         }}
-                                                        style={styles.contentShowButton}
+                                                        style={styles.commonButton}
                                                     >
-                                                        <Text style={styles.contentShowButtonText}>
+                                                        <Text style={styles.commonButtonText}>
                                                             Görüntüle
                                                         </Text>
                                                     </TouchableOpacity>
 
                                                     <TouchableOpacity
                                                         onPress={() => deleteImage(index)}
-                                                        style={styles.contentDeleteButton}
+                                                        style={styles.commonDeleteButton}
                                                     >
-                                                        <Image
-                                                            source={require('../assets/trash_can_icon.png')}
-                                                            style={{ width: 20, height: 20 }}
-                                                            resizeMode="cover"
+                                                        <MaterialCommunityIcons
+                                                            name="trash-can"
+                                                            size={20}
+                                                            color={selectedTheme.secondaryColor}
                                                         />
                                                     </TouchableOpacity>
-
                                                 </View>
+
                                             </View>
                                         );
                                     } else if (item.type === 'audio') {
@@ -454,9 +454,7 @@ export default function CreateNote({ navigation, route }) {
                                                         flexDirection: 'row',
                                                         width: '100%'
                                                     }}>
-                                                    <View
-                                                        style={styles.contentButtons}
-                                                    >
+                                                    <View style={styles.commonContentButtons}>
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 if (!sound) {
@@ -465,33 +463,25 @@ export default function CreateNote({ navigation, route }) {
                                                                     stopAudio();
                                                                 }
                                                             }}
-                                                            style={[
-                                                                styles.voiceNote,
-                                                                {
-                                                                    width: '80%'
-                                                                }
-                                                            ]}>
-                                                            <Text style={styles.voicePlayButton}>
+                                                            style={styles.commonButton}
+                                                        >
+                                                            <Text style={styles.commonButtonText}>
                                                                 {sound ? '■  ' + item.duration : '➤  ' + item.duration}
                                                             </Text>
                                                         </TouchableOpacity>
 
                                                         <TouchableOpacity
                                                             onPress={() => deleteAudio(index)}
-                                                            style={[
-                                                                styles.voiceNote,
-                                                                {
-                                                                    width: '20%'
-                                                                }
-                                                            ]}>
-                                                            <Image
-                                                                source={require('../assets/trash_can_icon.png')}
-                                                                style={{ width: 20, height: 20 }}
-                                                                resizeMode="cover"
+                                                            style={styles.commonDeleteButton}
+                                                        >
+                                                            <MaterialCommunityIcons
+                                                                name="trash-can"
+                                                                size={20}
+                                                                color={selectedTheme.secondaryColor}
                                                             />
-
                                                         </TouchableOpacity>
                                                     </View>
+
                                                 </View>
 
                                             </View>
@@ -507,15 +497,15 @@ export default function CreateNote({ navigation, route }) {
                                                     resizeMode="cover"
                                                 />
 
-                                                <View style={styles.contentButtons}>
+                                                <View style={styles.commonContentButtons}>
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             setImageToZoom(item.content)
                                                             setImageModalVisible(true);
                                                         }}
-                                                        style={styles.contentShowButton}
+                                                        style={styles.commonButton}
                                                     >
-                                                        <Text style={styles.contentShowButtonText}>
+                                                        <Text style={styles.commonButtonText}>
                                                             Görüntüle
                                                         </Text>
                                                     </TouchableOpacity>
@@ -523,13 +513,9 @@ export default function CreateNote({ navigation, route }) {
 
                                                     <TouchableOpacity
                                                         onPress={() => deleteImage(index)}
-                                                        style={styles.contentDeleteButton}
+                                                        style={styles.commonDeleteButton}
                                                     >
-                                                        <Image
-                                                            source={require('../assets/trash_can_icon.png')}
-                                                            style={{ width: 20, height: 20 }}
-                                                            resizeMode="cover"
-                                                        />
+                                                        <MaterialCommunityIcons name="trash-can" size={20} color={selectedTheme.secondaryColor} />
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
@@ -808,35 +794,39 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 10,
     },
 
-    contentButtons: {
+    commonContentButtons: {
         flexDirection: 'row',
-        backgroundColor: '#f2f2f2',
-        borderRadius: 12,
+        backgroundColor: theme.buttonBg,
+        borderRadius: 20,
         overflow: 'hidden',
-        width: '100%'
+        width: '100%',
     },
 
-    contentShowButton: {
+    commonButton: {
         flex: 1,
-        padding: 12,
+        paddingVertical: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.buttonBg
+        backgroundColor: theme.buttonBg,
     },
 
-    contentShowButtonText: {
+    commonButtonText: {
         color: theme.buttonText,
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: '600',
     },
 
-    contentDeleteButton: {
+    commonDeleteButton: {
         width: 60,
         backgroundColor: theme.errorButtonBg,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 12,
+        padding: 14,
+        marginLeft: 8,
+        borderRadius: 16,
     },
+
+
 
     // STYLIZE MODAL
     modalOverlay: {
@@ -932,25 +922,10 @@ const getStyles = (theme) => StyleSheet.create({
         borderColor: '#00000033',
     },
 
-
-    voiceNote: {
-        paddingVertical: 8,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-
-    },
     voiceNoteTitle: {
         color: theme.secondaryColor,
         fontSize: 16,
         marginBottom: 10
-    },
-
-    voicePlayButton: {
-        color: '#000',
-        fontSize: 18,
-        fontWeight: 'bold'
     },
 
     voiceModalOverlay: {
