@@ -109,6 +109,47 @@ const ToDoComponent = ({ navigation, route }) => {
         }
     };
 
+    const completedCount = tasks.filter(task => task.completed).length;
+    const totalCount = tasks.length;
+
+    const getStatusProps = () => {
+        if (totalCount === 0) {
+            return {
+                icon: 'clipboard-text-outline',
+                bgColor: '#666',
+                message: 'Henüz görev yok',
+            };
+        }
+
+        if (completedCount === totalCount) {
+            return {
+                icon: 'check-circle-outline',
+                bgColor: '#4CAF50', // Yeşil
+                message: 'Tüm görevler tamamlandı!',
+            };
+        }
+
+        if (completedCount === 0) {
+            return {
+                icon: 'alert-circle-outline',
+                bgColor: '#F44336', // Kırmızı
+                message: 'Hiç görev tamamlanmamış!',
+            };
+        }
+
+        return {
+            icon: 'progress-clock',
+            bgColor: '#FF9800', // Sarı
+            message: `${completedCount}/${totalCount} görev tamamlandı`,
+        };
+    };
+
+    const { icon, bgColor, message } = getStatusProps();
+
+
+
+
+
 
     return (
         <View style={styles.container}>
@@ -164,6 +205,9 @@ const ToDoComponent = ({ navigation, route }) => {
                         </TouchableOpacity>
                     </View>
 
+
+
+
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={[
@@ -189,6 +233,12 @@ const ToDoComponent = ({ navigation, route }) => {
                             ]}>Add</Text>
                         </TouchableOpacity>
                     </View>
+
+                    <View style={[styles.allDoneBox, { backgroundColor: bgColor }]}>
+                        <MaterialCommunityIcons name={icon} size={24} color="white" />
+                        <Text style={styles.allDoneText}>{message}</Text>
+                    </View>
+
 
                     <FlatList
                         data={tasks}
@@ -348,6 +398,22 @@ const getStyles = (theme) => StyleSheet.create({
     taskText: {
         fontSize: 16,
     },
+
+    allDoneBox: {
+        marginBottom: 12,
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor: '#2ecc71',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8
+    },
+    allDoneText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+    }
 });
 
 export default ToDoComponent;
