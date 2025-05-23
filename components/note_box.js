@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme_context';
 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 export default function NoteBox({ note, encryptedData }) {
     const { currentTheme } = useTheme();
 
@@ -20,11 +22,35 @@ export default function NoteBox({ note, encryptedData }) {
                 {note.title}
             </Text>
 
-            <Text style={[styles.text, { color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor }]}>
-                {encryptedData
-                    ? '🔒'
-                    : Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : ''}
-            </Text>
+            {encryptedData
+                ? (
+                    <View style={styles.encryptedTextBox}>
+                        <MaterialCommunityIcons name="lock" size={24} color={currentTheme.secondaryColor} />
+                        <Text style={[
+                            styles.text,
+                            {
+                                color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor,
+                                marginTop: 12
+                            }
+                        ]}>
+                            Şifrelenmiş Not
+                        </Text>
+                    </View>
+
+                )
+                : (
+                    <Text style={[
+                        styles.text,
+                        {
+                            color: savedTheme?.secondaryColor ?? currentTheme.secondaryColor
+                        }
+                    ]}>
+                        {Array.isArray(contentBlocks) && contentBlocks.length > 0 ? contentBlocks[0].content : ''}
+                    </Text>
+                )
+            }
+
+
         </View>
     );
 
@@ -47,5 +73,13 @@ const styles = StyleSheet.create({
     text: {
         maxHeight: 80,
         fontSize: 14,
+    },
+    encryptedTextBox: {
+        height: '60%',
+        width: '100%',
+        fontSize: 16,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
