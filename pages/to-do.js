@@ -227,7 +227,7 @@ const ToDoComponent = ({ navigation, route }) => {
 
                     <View style={styles.titleContainer}>
                         <TextInput
-                            placeholder="Title"
+                            placeholder="Başlık"
                             placeholderTextColor={selectedTheme.placeholderText}
                             value={title}
                             maxLength={60}
@@ -256,7 +256,7 @@ const ToDoComponent = ({ navigation, route }) => {
                                     fontFamily: fontFamily
                                 }
                             ]}
-                            placeholder="Add a task"
+                            placeholder="Görev ekle"
                             placeholderTextColor={selectedTheme.placeholderText}
                             value={task}
                             onChangeText={setTask}
@@ -375,7 +375,7 @@ const ToDoComponent = ({ navigation, route }) => {
                         setShowDeleteModal={setShowDeleteModal}
                         currentTheme={currentTheme}
                         onDeleteInput={onDeleteInput}
-                        message={"Are you sure you want to delete this note?"}
+                        message={"Silmek istediğinden emin misin?"}
                     />
                 </>
             ) : (

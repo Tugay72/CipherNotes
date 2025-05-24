@@ -360,7 +360,7 @@ export default function Home({ navigation, route }) {
                     onPress={() => navigation.navigate('Settings')}>
                     <Text
                         style={styles.menuItemText}
-                    >Settings</Text>
+                    >Ayarlar</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -426,7 +426,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="Search notes..."
+                                placeholder="Not ara..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}
@@ -497,7 +497,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="Search to-do..."
+                                placeholder="To-Do ara..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}
@@ -565,7 +565,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="Search reminder..."
+                                placeholder="Hatırlatıcı ara..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}

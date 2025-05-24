@@ -37,10 +37,10 @@ export default function StylingModal({
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>Stylize Note</Text>
+                    <Text style={styles.modalTitle}>Stiller</Text>
 
                     {/* Font Size */}
-                    <Text style={styles.modalLabel}>Font Size</Text>
+                    <Text style={styles.modalLabel}>Font Büyüklüğü</Text>
                     <View style={styles.optionRow}>
                         <Text style={{ color: '#aaa', marginBottom: 8 }}>{fontSize}</Text>
                         <Slider
@@ -78,7 +78,7 @@ export default function StylingModal({
 
 
                     {/* Theme Selection */}
-                    <Text style={styles.modalLabel}>Choose a Theme</Text>
+                    <Text style={styles.modalLabel}>Tema seç</Text>
                     <View style={styles.optionRow}>
                         {themes.map((theme) => (
                             <TouchableOpacity
@@ -104,7 +104,7 @@ export default function StylingModal({
                         style={styles.modalCloseButton}
                         onPress={() => setStylizeVisible(false)}
                     >
-                        <Text style={{ color: 'white' }}>Done</Text>
+                        <Text style={{ color: 'white' }}>OK</Text>
                     </TouchableOpacity>
 
 

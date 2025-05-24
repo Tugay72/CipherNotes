@@ -356,7 +356,7 @@ export default function CreateNote({ navigation, route }) {
                         {/* Content */}
                         <View style={styles.content}>
                             <TextInput
-                                placeholder="Title"
+                                placeholder="Başlık"
                                 placeholderTextColor={selectedTheme.placeholderText}
                                 value={title}
                                 maxLength={60}
@@ -382,14 +382,14 @@ export default function CreateNote({ navigation, route }) {
                                         color: selectedTheme.placeholderText,
                                         fontFamily: fontFamily
                                     }}
-                                >Last edit: {time + '  ' + date}</Text>
+                                >Son düzenleme: {time + '  ' + date}</Text>
 
                                 <Text style={
                                     {
                                         color: selectedTheme.placeholderText,
                                         fontFamily: fontFamily
                                     }}
-                                >Characters:
+                                >Karakterler:
                                     {
                                         contentBlocks.filter(b => b.type === 'text')
                                             .map(b => b.content.length).reduce((a, b) => a + b, 0)
@@ -519,7 +519,7 @@ export default function CreateNote({ navigation, route }) {
                                         return (
                                             <TextInput
                                                 multiline
-                                                placeholder="Start typing..."
+                                                placeholder="Yazmaya başla..."
                                                 placeholderTextColor={selectedTheme.placeholderText}
                                                 style={[
                                                     styles.textInput,
@@ -639,7 +639,7 @@ export default function CreateNote({ navigation, route }) {
                             setShowDeleteModal={setShowDeleteModal}
                             currentTheme={currentTheme}
                             onDeleteInput={onDeleteInput}
-                            message={"Are you sure you want to delete this note?"}
+                            message={"Silmek istediğinden emin misin?"}
                         ></DeleteModal>
 
                         {/* General Modal to show images and drawings at fullscreen */}

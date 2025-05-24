@@ -56,19 +56,19 @@ export default function SettingsScreen({ navigation }) {
                     />
                 </TouchableOpacity>
 
-                <Text style={styles.headerTitle}>Settings</Text>
+                <Text style={styles.headerTitle}>Ayarlar</Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Account */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account</Text>
+                    <Text style={styles.sectionTitle}>Hesap</Text>
 
                     <TouchableOpacity
                         style={styles.option}
                         onPress={() => setChangePasswordModalVisible(true)}
                     >
-                        <Text style={styles.optionText}>Change Password</Text>
+                        <Text style={styles.optionText}>Şifre Değiştir</Text>
                     </TouchableOpacity>
 
 
@@ -76,10 +76,10 @@ export default function SettingsScreen({ navigation }) {
 
                 {/* App Settings */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>App Settings</Text>
+                    <Text style={styles.sectionTitle}>Uygulama Ayarları</Text>
 
                     <View style={styles.switchRow}>
-                        <Text style={styles.optionText}>Enable Notifications</Text>
+                        <Text style={styles.optionText}>Bildirimleri etkinleştir</Text>
                         <Switch
                             value={notificationsEnabled}
                             onValueChange={toggleNotifications}
@@ -87,7 +87,7 @@ export default function SettingsScreen({ navigation }) {
                     </View>
 
                     <View style={styles.switchRow}>
-                        <Text style={styles.optionText}>Dark Theme</Text>
+                        <Text style={styles.optionText}>Karanlık tema</Text>
                         <Switch
                             value={isDarkTheme}
                             onValueChange={toggleTheme}
@@ -97,14 +97,14 @@ export default function SettingsScreen({ navigation }) {
 
                 {/* Storage */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Storage</Text>
+                    <Text style={styles.sectionTitle}>Depolama</Text>
 
                     <TouchableOpacity
                         style={styles.option}
                         onPress={() => setShowDeleteModal(true)}
                     >
                         <Text style={[styles.optionText, { color: 'red' }]}>
-                            Clear All Data
+                            Tüm verileri sil
                         </Text>
                     </TouchableOpacity>
                 </View>

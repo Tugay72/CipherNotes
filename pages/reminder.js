@@ -164,7 +164,7 @@ const Reminder = ({ navigation, route }) => {
             </View>
 
             <TextInput
-                placeholder="Title"
+                placeholder="Başlık"
                 placeholderTextColor={selectedTheme.placeholderText}
                 value={title}
                 maxLength={60}
@@ -196,7 +196,7 @@ const Reminder = ({ navigation, route }) => {
                             style={{
                                 color: selectedTheme.buttonText
                             }}
-                        >Select Date & Time</Text>
+                        >Tarih ve saat seç</Text>
                     </TouchableOpacity>
 
                     {showPicker && (
@@ -223,7 +223,7 @@ const Reminder = ({ navigation, route }) => {
                             style={{
                                 color: selectedTheme.primaryColor,
                                 fontWeight: 'bold'
-                            }}>Save Reminder</Text>
+                            }}>Kaydet</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -237,7 +237,7 @@ const Reminder = ({ navigation, route }) => {
                 setShowDeleteModal={setShowDeleteModal}
                 currentTheme={currentTheme}
                 onDeleteInput={onDeleteInput}
-                message={"Are you sure you want to delete this note?"}
+                message={"Silmek istediğinden emin misin?"}
             />
         </View>
     );
