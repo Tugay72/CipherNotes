@@ -70,6 +70,7 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
                     {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     <View style={styles.buttonRow}>
+
                         <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
                             <Text style={styles.cancelText}>İptal</Text>
                         </TouchableOpacity>
@@ -113,7 +114,7 @@ const getStyles = (theme) => StyleSheet.create({
         paddingVertical: 10,
         marginBottom: 12,
         fontSize: 16,
-        backgroundColor: theme.buttonBg,
+        backgroundColor: theme.primaryColor,
         color: theme.secondaryColor,
         borderColor: theme.secondaryColor + '44',
     },
@@ -132,9 +133,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         marginHorizontal: 5,
-        backgroundColor: theme.buttonBg,
-        borderWidth: 1,
-        borderColor: theme.secondaryColor,
+        backgroundColor: theme.errorButtonBg,
     },
     cancelText: {
         color: theme.secondaryColor,
@@ -147,7 +146,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         marginHorizontal: 5,
-        backgroundColor: theme.primaryColor,
+        backgroundColor: theme.buttonBg,
     },
     saveText: {
         color: theme.buttonText,

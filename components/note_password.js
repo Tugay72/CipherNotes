@@ -43,13 +43,6 @@ export default function PasswordModal({
 
                     <View style={styles.buttonRow}>
                         <TouchableOpacity
-                            style={styles.enterButton}
-                            onPress={handleUnlock}
-                        >
-                            <Text style={styles.enterText}>Gir</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
                             style={styles.cancelButton}
                             onPress={() => {
                                 setInputPassword('');
@@ -58,6 +51,15 @@ export default function PasswordModal({
                         >
                             <Text style={styles.cancelText}>İptal</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.enterButton}
+                            onPress={handleUnlock}
+                        >
+                            <Text style={styles.enterText}>Gir</Text>
+                        </TouchableOpacity>
+
+
                     </View>
                 </View>
             </View>
@@ -70,7 +72,7 @@ const getStyles = (theme) => StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.primaryColor,
+        backgroundColor: 'rgba(0, 0, 0, 1)',
     },
     container: {
         padding: 24,
@@ -95,7 +97,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 16,
         fontSize: 16,
         borderColor: theme.secondaryColor + '44',
-        backgroundColor: theme.buttonBg,
+        backgroundColor: theme.primaryColor,
         color: theme.secondaryColor,
     },
     buttonRow: {
@@ -119,14 +121,14 @@ const getStyles = (theme) => StyleSheet.create({
         paddingHorizontal: 24,
         borderRadius: 8,
         alignItems: 'center',
-        backgroundColor: theme.buttonBg,
+        backgroundColor: theme.errorButtonBg,
     },
     enterText: {
         fontWeight: 'bold',
-        color: theme.buttonText,
+        color: theme.primaryColor,
     },
     cancelText: {
         fontWeight: 'bold',
-        color: theme.secondaryColor,
+        color: theme.textOnError,
     },
 });

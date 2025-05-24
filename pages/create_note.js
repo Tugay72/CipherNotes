@@ -302,7 +302,6 @@ export default function CreateNote({ navigation, route }) {
                         style={styles.container}
                     >
 
-
                         {/* Top Navigation */}
                         <View style={styles.topNavContainer}>
                             <TouchableOpacity onPress={goBack}>
@@ -526,7 +525,7 @@ export default function CreateNote({ navigation, route }) {
                                                     styles.textInput,
                                                     {
                                                         fontSize: fontSize,
-                                                        fontFamily: fontFamily
+                                                        fontFamily: fontFamily,
                                                     }
                                                 ]}
                                                 value={item.content}

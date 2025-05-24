@@ -26,6 +26,7 @@ const ToDoComponent = ({ navigation, route }) => {
         }
     });
 
+
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [stylizeVisible, setStylizeVisible] = useState(false);
     const [editing, setEditing] = useState(false);
@@ -39,6 +40,24 @@ const ToDoComponent = ({ navigation, route }) => {
     const [selectedTheme, setSelectedTheme] = useState(route.params?.theme || currentTheme);
 
     const styles = useMemo(() => getStyles(selectedTheme), [selectedTheme]);
+
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editingTaskText, setEditingTaskText] = useState('');
+
+    const startEditingTask = (id, currentText) => {
+        setEditingTaskId(id);
+        setEditingTaskText(currentText);
+    };
+
+    const finishEditingTask = () => {
+        setTasks(prev =>
+            prev.map(t =>
+                t.id === editingTaskId ? { ...t, text: editingTaskText } : t
+            )
+        );
+        setEditingTaskId(null);
+        setEditingTaskText('');
+    };
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
@@ -71,7 +90,18 @@ const ToDoComponent = ({ navigation, route }) => {
     };
 
     const addTask = () => {
-        if (task.trim() !== '') {
+        if (task.trim() === '') return;
+
+        if (editingTaskId) {
+            // Düzenleme modundaysak
+            setTasks(prev =>
+                prev.map(t =>
+                    t.id === editingTaskId ? { ...t, text: task } : t
+                )
+            );
+            setEditingTaskId(null); // Düzenleme modunu kapat
+        } else {
+            // Yeni görev ekle
             setTasks(prev => [
                 ...prev,
                 {
@@ -80,9 +110,10 @@ const ToDoComponent = ({ navigation, route }) => {
                     completed: false
                 }
             ]);
-            setTask('');
         }
+        setTask('');
     };
+
 
     const toggleCompleted = (id) => {
         setTasks(prev =>
@@ -91,6 +122,15 @@ const ToDoComponent = ({ navigation, route }) => {
             )
         );
     };
+
+    const editTask = (id) => {
+        const taskToEdit = tasks.find(t => t.id === id);
+        if (taskToEdit) {
+            setTask(taskToEdit.text);     // Input'a görev metnini yükle
+            setEditingTaskId(id);         // Düzenleme modunu aktif et
+        }
+    };
+
 
     const removeTask = (id) => {
         setTasks(prev => prev.filter(t => t.id !== id));
@@ -221,18 +261,16 @@ const ToDoComponent = ({ navigation, route }) => {
                             value={task}
                             onChangeText={setTask}
                         />
+
                         <TouchableOpacity
                             style={styles.addButton}
                             onPress={addTask}
                         >
-                            <Text style={[
-                                styles.addButtonText,
-                                {
-                                    fontFamily: fontFamily
-                                }
-                            ]}>
-                                <MaterialCommunityIcons name='plus' size={24} color="white" />
-                            </Text>
+                            <MaterialCommunityIcons
+                                name='plus'
+                                size={24}
+                                color="white"
+                            />
                         </TouchableOpacity>
                     </View>
 
@@ -246,8 +284,7 @@ const ToDoComponent = ({ navigation, route }) => {
                         data={tasks}
                         keyExtractor={(item) => item.id}
                         renderItem={({ item }) => (
-                            <View
-                                style={styles.taskItem}>
+                            <View style={styles.taskItem}>
                                 <TouchableOpacity onPress={() => toggleCompleted(item.id)}>
                                     <MaterialCommunityIcons
                                         name={item.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
@@ -257,24 +294,45 @@ const ToDoComponent = ({ navigation, route }) => {
                                     />
                                 </TouchableOpacity>
 
-                                <Text
-                                    style={[
-                                        styles.taskText,
-                                        {
-                                            color: selectedTheme.secondaryColor,
-                                            textDecorationLine: item.completed ? 'line-through' : 'none',
-                                            flex: 1,
-                                            fontFamily: fontFamily
-                                        }
-                                    ]}
-                                >
-                                    {item.text}
-                                </Text>
+                                {editingTaskId === item.id ? (
+                                    <TextInput
+                                        multiline
+                                        style={[
+                                            styles.taskText,
+                                            {
+                                                color: selectedTheme.secondaryColor,
+                                                flex: 1,
+                                                fontFamily: fontFamily
+                                            }
+                                        ]}
+                                        value={editingTaskText}
+                                        onChangeText={setEditingTaskText}
+                                        onBlur={finishEditingTask}
+                                        onSubmitEditing={finishEditingTask}
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <TouchableOpacity style={{ flex: 1 }} onPress={() => startEditingTask(item.id, item.text)}>
+                                        <Text
+                                            style={[
+                                                styles.taskText,
+                                                {
+                                                    color: selectedTheme.secondaryColor,
+                                                    textDecorationLine: item.completed ? 'line-through' : 'none',
+                                                    fontFamily: fontFamily,
+                                                    paddingVertical: 16,
+                                                }
+                                            ]}
+                                        >
+                                            {item.text}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
 
                                 <TouchableOpacity
-
                                     style={styles.deleteButton}
-                                    onPress={() => removeTask(item.id)}>
+                                    onPress={() => removeTask(item.id)}
+                                >
                                     <MaterialCommunityIcons
                                         name="trash-can"
                                         size={20}
@@ -283,6 +341,7 @@ const ToDoComponent = ({ navigation, route }) => {
                                 </TouchableOpacity>
                             </View>
                         )}
+
                     />
 
                     {/* Styling Modal */}
@@ -385,13 +444,10 @@ const getStyles = (theme) => StyleSheet.create({
         color: theme.secondaryColor,
     },
     addButton: {
-        height: '100%',
-        width: '20%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.lowerOpacityText,
         borderRadius: 16,
-        marginLeft: 8
+        marginRight: 9
     },
     addButtonText: {
         paddingHorizontal: 8,
@@ -405,20 +461,25 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.containerBg,
         marginBottom: 12,
         paddingLeft: 12,
-        height: 64,
+        minHeight: 64,
     },
     taskText: {
         fontSize: 16,
     },
 
+    editButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+        borderRadius: 16,
+    },
+
+
     deleteButton: {
-        width: '20%',
-        height: '100%',
-        backgroundColor: theme.errorButtonBg,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 14,
-        marginLeft: 8,
+        marginRight: 4,
         borderRadius: 16,
     },
 
