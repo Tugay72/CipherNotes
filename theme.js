@@ -21,6 +21,7 @@ const themes = [
         lowerOpacityText: "#1E88E5",
         containerBg: "#e5e5e5",
         buttonBg: "#1E88E5",
+        errorButtonBg: "#D32F2F",
         buttonText: "#FFFFFF",
         errorColor: "#E53935",
         textOnError: "#FFFFFF",

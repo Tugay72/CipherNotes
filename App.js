@@ -14,9 +14,9 @@ import SetPasswordModal from './components/set_first_password';
 
 const Stack = createStackNavigator();
 
+import EncryptedText from './components/encrypted_text_animation';
 import { ThemeProvider } from './theme_context';
-
-import { saveSecretKey } from './encryptionUtils';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -72,23 +72,37 @@ export default function App() {
                 <ImageBackground
                     source={require('./assets/enter_password_bg.jpg')}
                     style={styles.background}
-                    resizeMode='cover'
+                    resizeMode="cover"
                 >
+                    {/* Arka planı biraz karartıyoruz */}
+                    <View style={styles.overlay} />
+
                     <View style={styles.container}>
-                        <PasswordModal
-                            visible={true}
-                            onClose={() => { }}
-                            onConfirm={handlePasswordConfirm}
-                            onSetPassword={handleSetPassword}
-                            isPasswordSet={storedPassword !== null}
-                        />
+                        <View style={styles.floatingText}>
+                            <MaterialCommunityIcons name="lock" size={24} color={'#fff'} style={{ paddingLeft: '120' }} />
+                            <EncryptedText text='Unbreakable password' ></EncryptedText>
+
+                        </View>
+
+                        <View style={{
+                            position: 'absolute',
+                            top: 320,
+                            width: '100%'
+                        }}>
+                            <PasswordModal
+                                onConfirm={handlePasswordConfirm}
+                                onSetPassword={handleSetPassword}
+                                isPasswordSet={storedPassword !== null}
+
+                            />
+                        </View>
+
 
                         <SetPasswordModal
                             visible={showSetPasswordModal}
                             onClose={() => setShowSetPasswordModal(false)}
                             onSuccess={handlePasswordSetSuccess}
                         />
-
                     </View>
                 </ImageBackground>
 
@@ -114,8 +128,23 @@ export default function App() {
 const styles = StyleSheet.create({
     background: {
         flex: 1,
-        width: '100%',
-        height: '100%',
+    },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    container: {
+        flex: 1,
         justifyContent: 'center',
-    }
+        alignItems: 'center'
+    },
+    floatingText: {
+        position: 'absolute',
+        flexDirection: 'column',
+        top: 280,
+        alignSelf: 'center',
+        justifyContent: 'center'
+    },
+
 });
+

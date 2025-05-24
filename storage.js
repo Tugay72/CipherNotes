@@ -21,18 +21,43 @@ export const saveEncryptedData = async (key, value) => {
 
 export const loadEncryptedData = async (key) => {
     try {
+        if (!key || typeof key !== 'string') {
+            console.warn('Geçersiz anahtar:', key);
+            return null;
+        }
+
         const encrypted = await AsyncStorage.getItem(key);
-        if (!encrypted) return null;
+        if (!encrypted || typeof encrypted !== 'string') {
+            console.warn('Şifrelenmiş veri bulunamadı veya geçersiz:', encrypted);
+            return null;
+        }
 
         const decrypted = CryptoJS.AES.decrypt(encrypted, secretKey, {
             iv,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         });
-        const plainText = decrypted.toString(CryptoJS.enc.Utf8);
-        const parsedNotes = JSON.parse(plainText); // this should be an array!
 
-        // Attach encryptedData only if note has a password
+        const plainText = decrypted.toString(CryptoJS.enc.Utf8);
+
+        if (!plainText) {
+            console.warn('Decryption sonucu boş veya geçersiz!');
+            return null;
+        }
+
+        let parsedNotes;
+        try {
+            parsedNotes = JSON.parse(plainText);
+        } catch (jsonError) {
+            console.error('JSON parse hatası:', jsonError);
+            return null;
+        }
+
+        if (!Array.isArray(parsedNotes)) {
+            console.warn('Çözümlenen veri dizi formatında değil:', parsedNotes);
+            return null;
+        }
+
         const notesWithEncrypted = parsedNotes.map(note => ({
             ...note,
             encryptedData: note.notePassword ? encrypted : null
@@ -45,5 +70,4 @@ export const loadEncryptedData = async (key) => {
         return null;
     }
 };
-
 
