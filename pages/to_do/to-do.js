@@ -1,14 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useTheme } from '../theme_context';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import themes from "../theme";
+import theme from '../../theme'
 
-import StylingModal from '../components/styling_modal';
-import DeleteModal from '../components/delete_modal';
-import CreatePasswordModal from '../components/create_note_password';
-import PasswordModal from '../components/note_password';
+import StylingModal from '../../components/styling_modal';
+import DeleteModal from '../../components/delete_modal';
+import CreatePasswordModal from '../note/create_note_password';
+import PasswordModal from '../../components/note_password';
 
 const ToDoComponent = ({ navigation, route }) => {
 

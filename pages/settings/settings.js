@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import ChangePasswordModal from '../components/change_password';
-import DeleteModal from '../components/delete_modal';
+import ChangePasswordModal from './change_password';
+import DeleteModal from '../../components/delete_modal';
 
 
 // ... importlar aynı

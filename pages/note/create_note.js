@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, StatusBar, Keyboard, Image, ImageBackground, FlatList, Modal, SafeAreaView, Share, BackHandler } from "react-native";
 import { Menu, Provider, Divider } from 'react-native-paper';
@@ -8,14 +8,14 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
-import VoiceNote from '../components/voice_note'
+import VoiceNote from '../../components/voice_note'
 
-import themes from "../theme";
-import StylingModal from "../components/styling_modal";
-import DrawingCanvas from "../components/drawing_canvas";
-import DeleteModal from "../components/delete_modal";
-import PasswordModal from "../components/note_password";
-import CreatePasswordModal from "../components/create_note_password";
+import themes from "../../theme";
+import StylingModal from "../../components/styling_modal";
+import DrawingCanvas from "../../components/drawing_canvas";
+import DeleteModal from "../../components/delete_modal";
+import PasswordModal from "../../components/note_password";
+import CreatePasswordModal from "./create_note_password";
 
 
 export default function CreateNote({ navigation, route }) {

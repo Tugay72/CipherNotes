@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 import * as Notifications from 'expo-notifications';
 import { BackHandler } from 'react-native';
 
@@ -7,8 +7,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'r
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
-import CountdownTimer from '../components/countdown_timer';
-import DeleteModal from '../components/delete_modal';
+import CountdownTimer from '../../components/countdown_timer';
+import DeleteModal from '../../components/delete_modal';
 
 
 const Reminder = ({ navigation, route }) => {

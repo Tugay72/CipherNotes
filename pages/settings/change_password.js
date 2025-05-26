@@ -3,50 +3,32 @@ import {
     StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
+import { savePassword, verifyPassword } from '../../storage';
 
 export default function ChangePasswordModal({ visible, onClose }) {
     const { currentTheme } = useTheme();
 
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
-
-    useEffect(() => {
-        loadPassword();
-    }, []);
-
-    const loadPassword = async () => {
-        try {
-            const storedPassword = await AsyncStorage.getItem('appPassword');
-            if (storedPassword) {
-                setCurrentPassword(storedPassword);
-            } else {
-                await AsyncStorage.setItem('appPassword', '1234');
-                setCurrentPassword('1234');
-            }
-        } catch (e) {
-            console.error('Failed to load password:', e);
-        }
-    };
 
     const handleChangePassword = async () => {
-        if (oldPassword !== currentPassword) {
+        const verify = await verifyPassword(oldPassword);
+        if (!verify) {
             Alert.alert('Hatalı şifre', 'Mevcut şifrenizi yanlış girdiniz.');
             return;
         }
 
-        if (newPassword.length == 0) {
-            setCurrentPassword(null);
+        if (newPassword.length === 0) {
             setOldPassword('');
             setNewPassword('');
             Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
             onClose();
+            return;
         }
 
         try {
-            await AsyncStorage.setItem('appPassword', newPassword);
-            setCurrentPassword(newPassword);
+            await savePassword(newPassword);
             setOldPassword('');
             setNewPassword('');
             Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
@@ -55,6 +37,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
             Alert.alert('Hata', 'Şifre güncellenemedi.');
         }
     };
+
 
     const styles = getStyles(currentTheme);
 

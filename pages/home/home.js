@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 import { useIsFocused } from '@react-navigation/native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveEncryptedData, loadEncryptedData } from '../storage';
+import { saveEncryptedData, loadEncryptedData } from '../../storage';
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput, Animated, BackHandler, TouchableWithoutFeedback } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import NoteBox from '../components/note_box';
-import ToDoBox from '../components/to_do_box';
-import ReminderBox from '../components/reminder_box';
+import NoteBox from '../../pages/note/note_box';
+import ToDoBox from '../../pages/to_do/to_do_box';
+import ReminderBox from '../../pages/reminder/reminder_box';
 
 
 export default function Home({ navigation, route }) {

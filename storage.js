@@ -71,3 +71,52 @@ export const loadEncryptedData = async (key) => {
     }
 };
 
+
+export const savePassword = async (password) => {
+    try {
+        const encrypted = CryptoJS.AES.encrypt(password, secretKey, {
+            iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        }).toString();
+        await AsyncStorage.setItem('appPassword', encrypted);
+    } catch (error) {
+        console.error('Password save failed:', error);
+    }
+};
+
+
+export const passwordExists = async () => {
+    try {
+        const encrypted = await AsyncStorage.getItem('appPassword');
+
+        if (typeof encrypted !== 'string' || !encrypted) {
+            return null;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Password load failed:', error);
+        return null;
+    }
+};
+
+export const verifyPassword = async (inputPassword) => {
+    try {
+        const encrypted = await AsyncStorage.getItem('appPassword');
+        if (!encrypted) return false;
+
+        const bytes = CryptoJS.AES.decrypt(encrypted, secretKey, {
+            iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
+
+        const storedPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+        return inputPassword === storedPassword;
+    } catch (error) {
+        console.error('Password verification failed:', error);
+        return false;
+    }
+};

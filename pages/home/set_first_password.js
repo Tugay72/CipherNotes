@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { savePassword } from '../../storage';
 
 export default function SetPasswordModal({ visible, onClose, onSuccess }) {
     const [password, setPassword] = useState('');
@@ -18,11 +19,11 @@ export default function SetPasswordModal({ visible, onClose, onSuccess }) {
             return;
         }
 
-        await AsyncStorage.setItem('appPassword', password);
+        await savePassword(password);
         setPassword('');
         setConfirmPassword('');
         setError('');
-        onSuccess(); // Girişe izin ver
+        onSuccess();
     };
 
     return (

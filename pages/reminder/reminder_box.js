@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 
 export default function ReminderBox({ reminder }) {
     const { currentTheme } = useTheme();

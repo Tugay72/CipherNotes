@@ -5,20 +5,26 @@ export default function PasswordModal({ visible, onClose, onConfirm, onSetPasswo
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleConfirm = () => {
-        const success = onConfirm?.(password);
+    const handleConfirm = async () => {
+        const success = await onConfirm?.(password);
         if (!success) {
             setError('⚠️ Hatalı şifre. Lütfen tekrar deneyin.');
         } else {
             setError('');
             setPassword('');
+            onClose?.();
         }
     };
 
-    const handleQuickLogin = () => {
-        onConfirm?.('');
-        setPassword('');
-        setError('');
+    const handleQuickLogin = async () => {
+        const success = await onConfirm?.('');
+        if (success) {
+            setPassword('');
+            setError('');
+            onClose?.();
+        } else {
+            setError('⚠️ Hatalı giriş.');
+        }
     };
 
     const handleSetPassword = () => {
@@ -64,7 +70,6 @@ export default function PasswordModal({ visible, onClose, onConfirm, onSetPasswo
                 )}
             </View>
         </View>
-
     );
 }
 
@@ -131,4 +136,3 @@ const styles = StyleSheet.create({
         letterSpacing: 0.4,
     },
 });
-

@@ -2,48 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, StyleSheet, Vibration, ImageBackground } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import Home from './pages/home';
-import CreateNote from './pages/create_note';
-import ToDoComponent from './pages/to-do';
-import Reminder from './pages/reminder';
-import Settings from './pages/settings';
-import PasswordModal from './components/password_modal';
-import SetPasswordModal from './components/set_first_password';
+import Home from './pages/home/home';
+import CreateNote from './pages/note/create_note';
+import ToDoComponent from './pages/to_do/to-do';
+import Reminder from './pages/reminder/reminder';
+import Settings from './pages/settings/settings';
+import PasswordModal from './pages/home/password_modal';
+import SetPasswordModal from './pages/home/set_first_password';
+
+import { ThemeProvider } from './theme_context';
+import EncryptedText from './pages/home/encrypted_text_animation';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { passwordExists, verifyPassword } from './storage';  // Tek import
 
 const Stack = createStackNavigator();
 
-import EncryptedText from './components/encrypted_text_animation';
-import { ThemeProvider } from './theme_context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [storedPassword, setStoredPassword] = useState(null);
+    const [storedPassword, setStoredPassword] = useState(null); // Şifre var mı kontrolü için
     const [isLoading, setIsLoading] = useState(true);
     const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
 
-
     useEffect(() => {
-        const getStoredPassword = async () => {
-            const password = await AsyncStorage.getItem('appPassword');
+        const checkIfPasswordSet = async () => {
+            const password = await passwordExists();
             setStoredPassword(password);
-            if (password === null) {
-                setIsAuthenticated(false);
-            }
             setIsLoading(false);
         };
-        getStoredPassword();
+        checkIfPasswordSet();
     }, []);
 
-    const handlePasswordConfirm = (enteredPassword) => {
-        if (storedPassword === null) {
+    const handlePasswordConfirm = async (enteredPassword) => {
+        // Eğer şifre henüz belirlenmemişse doğrudan onayla
+        if (storedPassword === false) {
             setIsAuthenticated(true);
             return true;
         }
 
-        if (enteredPassword === storedPassword) {
+        // Şifre varsa doğrulama yap
+        const isValid = await verifyPassword(enteredPassword);
+        if (isValid) {
             setIsAuthenticated(true);
             return true;
         }
@@ -56,13 +56,17 @@ export default function App() {
         setShowSetPasswordModal(true);
     };
 
-    // Şifre başarıyla ayarlandığında:
     const handlePasswordSetSuccess = () => {
         setShowSetPasswordModal(false);
         setIsAuthenticated(true);
     };
 
+    const onConfirmPassword = async (enteredPassword) => {
+        return await handlePasswordConfirm(enteredPassword);
+    };
+
     if (isLoading) {
+        // İstersen burada bir loading spinner da koyabilirsin
         return null;
     }
 
@@ -74,29 +78,30 @@ export default function App() {
                     style={styles.background}
                     resizeMode="cover"
                 >
-                    {/* Arka planı biraz karartıyoruz */}
                     <View style={styles.overlay} />
 
                     <View style={styles.container}>
                         <View style={styles.floatingText}>
-                            <MaterialCommunityIcons name="lock" size={24} color={'#fff'} style={{ paddingLeft: '120' }} />
-                            <EncryptedText text='Unbreakable password' ></EncryptedText>
-
+                            <MaterialCommunityIcons
+                                name="lock"
+                                size={24}
+                                color="#fff"
+                                style={{ paddingLeft: 120 }}
+                            />
+                            <EncryptedText text="Unbreakable password" />
                         </View>
 
                         <View style={{
                             position: 'absolute',
                             top: 320,
-                            width: '100%'
+                            width: '100%',
                         }}>
                             <PasswordModal
-                                onConfirm={handlePasswordConfirm}
+                                onConfirm={onConfirmPassword}
                                 onSetPassword={handleSetPassword}
-                                isPasswordSet={storedPassword !== null}
-
+                                isPasswordSet={storedPassword !== false}
                             />
                         </View>
-
 
                         <SetPasswordModal
                             visible={showSetPasswordModal}
@@ -105,7 +110,6 @@ export default function App() {
                         />
                     </View>
                 </ImageBackground>
-
             </ThemeProvider>
         );
     }
@@ -136,15 +140,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     floatingText: {
         position: 'absolute',
         flexDirection: 'column',
         top: 280,
         alignSelf: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
-
 });
-

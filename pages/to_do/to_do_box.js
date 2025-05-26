@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme_context';
+import { useTheme } from '../../theme_context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function ToDoBox({ toDo }) {
