@@ -1,5 +1,6 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS, { enc } from 'crypto-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { endAsyncEvent } from 'react-native/Libraries/Performance/Systrace';
 
 const secretKey = CryptoJS.enc.Utf8.parse('1234567890123456');
 const iv = CryptoJS.enc.Utf8.parse('6543210987654321');
@@ -74,11 +75,18 @@ export const loadEncryptedData = async (key) => {
 
 export const savePassword = async (password) => {
     try {
+        if (!password) {
+            // Şifre kaldırmak için özel bir anahtar kullan
+            await AsyncStorage.setItem('appPassword', '__NO_PASSWORD__');
+            return;
+        }
+
         const encrypted = CryptoJS.AES.encrypt(password, secretKey, {
             iv,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         }).toString();
+
         await AsyncStorage.setItem('appPassword', encrypted);
     } catch (error) {
         console.error('Password save failed:', error);
@@ -86,20 +94,27 @@ export const savePassword = async (password) => {
 };
 
 
+
+
 export const passwordExists = async () => {
     try {
         const encrypted = await AsyncStorage.getItem('appPassword');
 
-        if (typeof encrypted !== 'string' || !encrypted) {
-            return null;
+        if (
+            typeof encrypted !== 'string' ||
+            !encrypted ||
+            encrypted === '__NO_PASSWORD__'
+        ) {
+            return false;
         }
 
         return true;
     } catch (error) {
         console.error('Password load failed:', error);
-        return null;
+        return false;
     }
 };
+
 
 export const verifyPassword = async (inputPassword) => {
     try {
@@ -113,7 +128,6 @@ export const verifyPassword = async (inputPassword) => {
         });
 
         const storedPassword = bytes.toString(CryptoJS.enc.Utf8);
-
         return inputPassword === storedPassword;
     } catch (error) {
         console.error('Password verification failed:', error);

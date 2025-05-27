@@ -20,6 +20,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
         }
 
         if (newPassword.length === 0) {
+            await savePassword(null);
             setOldPassword('');
             setNewPassword('');
             Alert.alert('Başarılı', 'Şifreniz değiştirildi.');

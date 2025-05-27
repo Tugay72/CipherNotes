@@ -6,7 +6,9 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
+    Alert,
 } from 'react-native';
+import { verifyPassword } from '../../storage'; // Şifre kontrol fonksiyonu
 
 export default function CreatePasswordModal({ visible, onClose, onSave, theme }) {
     const [password, setPassword] = useState('');
@@ -36,6 +38,15 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
         setPassword('');
         setConfirmPassword('');
         onClose();
+    };
+
+    const handleRemovePassword = () => {
+        setError('');
+        onSave(password);
+        setPassword('');
+        setConfirmPassword('');
+        onClose();
+
     };
 
     return (
@@ -70,7 +81,6 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
                     {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     <View style={styles.buttonRow}>
-
                         <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
                             <Text style={styles.cancelText}>İptal</Text>
                         </TouchableOpacity>
@@ -79,6 +89,10 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
                             <Text style={styles.saveText}>Kaydet</Text>
                         </TouchableOpacity>
                     </View>
+
+                    <TouchableOpacity onPress={handleRemovePassword} style={styles.removeButton}>
+                        <Text style={styles.removeText}>Şifreyi Kaldır</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </Modal>
@@ -152,5 +166,14 @@ const getStyles = (theme) => StyleSheet.create({
         color: theme.buttonText,
         fontWeight: '600',
         fontSize: 16,
+    },
+    removeButton: {
+        marginTop: 16,
+        alignSelf: 'center',
+    },
+    removeText: {
+        color: theme.errorColor,
+        fontSize: 15,
+        textDecorationLine: 'underline',
     },
 });

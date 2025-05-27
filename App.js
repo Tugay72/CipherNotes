@@ -21,14 +21,20 @@ const Stack = createStackNavigator();
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [storedPassword, setStoredPassword] = useState(null); // Şifre var mı kontrolü için
+    const [storedPassword, setStoredPassword] = useState();
     const [isLoading, setIsLoading] = useState(true);
     const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
 
     useEffect(() => {
         const checkIfPasswordSet = async () => {
             const password = await passwordExists();
-            setStoredPassword(password);
+            if (password == false) {
+                setStoredPassword(null);
+            }
+            else {
+                setStoredPassword(password);
+            }
+
             setIsLoading(false);
         };
         checkIfPasswordSet();
@@ -99,7 +105,7 @@ export default function App() {
                             <PasswordModal
                                 onConfirm={onConfirmPassword}
                                 onSetPassword={handleSetPassword}
-                                isPasswordSet={storedPassword !== false}
+                                isPasswordSet={storedPassword ? true : false}
                             />
                         </View>
 
