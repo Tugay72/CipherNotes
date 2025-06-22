@@ -34,7 +34,7 @@ export default function SettingsScreen({ navigation }) {
         try {
             await AsyncStorage.clear();
         } catch (e) {
-            Alert.alert('Hata', 'Veriler temizlenemedi.');
+            Alert.alert('Error', 'Could not complete deletion of data!.');
         }
     };
 
@@ -56,19 +56,19 @@ export default function SettingsScreen({ navigation }) {
                     />
                 </TouchableOpacity>
 
-                <Text style={styles.headerTitle}>Ayarlar</Text>
+                <Text style={styles.headerTitle}>Setting</Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Account */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Hesap</Text>
+                    <Text style={styles.sectionTitle}>Account</Text>
 
                     <TouchableOpacity
                         style={styles.option}
                         onPress={() => setChangePasswordModalVisible(true)}
                     >
-                        <Text style={styles.optionText}>Şifre Değiştir</Text>
+                        <Text style={styles.optionText}>Change Password</Text>
                     </TouchableOpacity>
 
 
@@ -76,10 +76,10 @@ export default function SettingsScreen({ navigation }) {
 
                 {/* App Settings */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Uygulama Ayarları</Text>
+                    <Text style={styles.sectionTitle}>App Settings</Text>
 
                     <View style={styles.switchRow}>
-                        <Text style={styles.optionText}>Bildirimleri etkinleştir</Text>
+                        <Text style={styles.optionText}>Enable Notifications</Text>
                         <Switch
                             value={notificationsEnabled}
                             onValueChange={toggleNotifications}
@@ -87,7 +87,7 @@ export default function SettingsScreen({ navigation }) {
                     </View>
 
                     <View style={styles.switchRow}>
-                        <Text style={styles.optionText}>Karanlık tema</Text>
+                        <Text style={styles.optionText}>Dark Theme</Text>
                         <Switch
                             value={isDarkTheme}
                             onValueChange={toggleTheme}
@@ -97,14 +97,14 @@ export default function SettingsScreen({ navigation }) {
 
                 {/* Storage */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Depolama</Text>
+                    <Text style={styles.sectionTitle}>Storage</Text>
 
                     <TouchableOpacity
                         style={styles.option}
                         onPress={() => setShowDeleteModal(true)}
                     >
                         <Text style={[styles.optionText, { color: 'red' }]}>
-                            Tüm verileri sil
+                            Delete all data
                         </Text>
                     </TouchableOpacity>
                 </View>

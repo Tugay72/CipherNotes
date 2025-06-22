@@ -15,7 +15,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
     const handleChangePassword = async () => {
         const verify = await verifyPassword(oldPassword);
         if (!verify) {
-            Alert.alert('Hatalı şifre', 'Mevcut şifrenizi yanlış girdiniz.');
+            Alert.alert('Uncorrect password', 'You entered wrong password!');
             return;
         }
 
@@ -23,7 +23,7 @@ export default function ChangePasswordModal({ visible, onClose }) {
             await savePassword(null);
             setOldPassword('');
             setNewPassword('');
-            Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
+            Alert.alert('Success', 'Your password has been changed!');
             onClose();
             return;
         }
@@ -32,10 +32,10 @@ export default function ChangePasswordModal({ visible, onClose }) {
             await savePassword(newPassword);
             setOldPassword('');
             setNewPassword('');
-            Alert.alert('Başarılı', 'Şifreniz değiştirildi.');
+            Alert.alert('Success', 'Your password has been changed!');
             onClose();
         } catch (e) {
-            Alert.alert('Hata', 'Şifre güncellenemedi.');
+            Alert.alert('Error', 'Error while changing password');
         }
     };
 
