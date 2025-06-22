@@ -58,10 +58,10 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
         >
             <View style={styles.overlay}>
                 <View style={styles.container}>
-                    <Text style={styles.title}>Şifre Oluştur</Text>
+                    <Text style={styles.title}>Create Password</Text>
 
                     <TextInput
-                        placeholder="Şifre"
+                        placeholder="Enter password"
                         placeholderTextColor={theme.placeholderText}
                         secureTextEntry
                         style={styles.input}
@@ -70,7 +70,7 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
                     />
 
                     <TextInput
-                        placeholder="Şifreyi Tekrarla"
+                        placeholder="Re-enter password"
                         placeholderTextColor={theme.placeholderText}
                         secureTextEntry
                         style={styles.input}
@@ -82,16 +82,16 @@ export default function CreatePasswordModal({ visible, onClose, onSave, theme })
 
                     <View style={styles.buttonRow}>
                         <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
-                            <Text style={styles.cancelText}>İptal</Text>
+                            <Text style={styles.cancelText}>Back</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-                            <Text style={styles.saveText}>Kaydet</Text>
+                            <Text style={styles.saveText}>Save Password</Text>
                         </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity onPress={handleRemovePassword} style={styles.removeButton}>
-                        <Text style={styles.removeText}>Şifreyi Kaldır</Text>
+                        <Text style={styles.removeText}>Remove Password</Text>
                     </TouchableOpacity>
                 </View>
             </View>

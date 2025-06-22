@@ -27,7 +27,7 @@ const CountdownTimer = ({ targetDate }) => {
     if (!timeLeft) {
         return (
             <View style={styles.container}>
-                <Text style={styles.finishedText}>Tarih seçilmedi!</Text>
+                <Text style={styles.finishedText}>Date is not selected!</Text>
             </View>
         );
     }
@@ -36,7 +36,7 @@ const CountdownTimer = ({ targetDate }) => {
         <View style={styles.container}>
             <View style={styles.block}>
                 <Text style={styles.number}>{timeLeft.days.toString().padStart(2, '0')}</Text>
-                <Text style={styles.label}>Gün</Text>
+                <Text style={styles.label}>Day</Text>
             </View>
             <View style={styles.block}>
                 <Text style={styles.number}>

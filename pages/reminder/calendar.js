@@ -2,7 +2,7 @@ const saveAndGoBack = async () => {
     try {
         await saveReminderByID(id, title, date, selectedTheme);
         navigation.navigate('Home', {
-            shouldNavigateToReminder: true // bu sayede `reminder` sekmesi otomatik seçilir
+            shouldNavigateToReminder: true
         });
     } catch (error) {
         console.error('Error saving reminder:', error);

@@ -123,8 +123,8 @@ const Reminder = ({ navigation, route }) => {
 
         await Notifications.scheduleNotificationAsync({
             content: {
-                title: title || 'Hatırlatıcı',
-                body: 'Hatırlatıcı zamanı geldi!',
+                title: title || 'Reminder',
+                body: 'Reminder Time!',
                 sound: 'default',
             },
             trigger: {
@@ -164,7 +164,7 @@ const Reminder = ({ navigation, route }) => {
             </View>
 
             <TextInput
-                placeholder="Başlık"
+                placeholder="Title"
                 placeholderTextColor={selectedTheme.placeholderText}
                 value={title}
                 maxLength={60}
@@ -196,7 +196,7 @@ const Reminder = ({ navigation, route }) => {
                             style={{
                                 color: selectedTheme.buttonText
                             }}
-                        >Tarih ve saat seç</Text>
+                        >Select date & time</Text>
                     </TouchableOpacity>
 
                     {showPicker && (
@@ -223,7 +223,7 @@ const Reminder = ({ navigation, route }) => {
                             style={{
                                 color: selectedTheme.primaryColor,
                                 fontWeight: 'bold'
-                            }}>Kaydet</Text>
+                            }}>Save</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -237,7 +237,7 @@ const Reminder = ({ navigation, route }) => {
                 setShowDeleteModal={setShowDeleteModal}
                 currentTheme={currentTheme}
                 onDeleteInput={onDeleteInput}
-                message={"Silmek istediğinden emin misin?"}
+                message={"Are you sure?"}
             />
         </View>
     );

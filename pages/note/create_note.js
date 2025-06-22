@@ -382,14 +382,14 @@ export default function CreateNote({ navigation, route }) {
                                         color: selectedTheme.placeholderText,
                                         fontFamily: fontFamily
                                     }}
-                                >Son düzenleme: {time + '  ' + date}</Text>
+                                >Last edit: {time + '  ' + date}</Text>
 
                                 <Text style={
                                     {
                                         color: selectedTheme.placeholderText,
                                         fontFamily: fontFamily
                                     }}
-                                >Karakterler:
+                                >Characters:
                                     {
                                         contentBlocks.filter(b => b.type === 'text')
                                             .map(b => b.content.length).reduce((a, b) => a + b, 0)
@@ -519,7 +519,7 @@ export default function CreateNote({ navigation, route }) {
                                         return (
                                             <TextInput
                                                 multiline
-                                                placeholder="Yazmaya başla..."
+                                                placeholder="Start typing..."
                                                 placeholderTextColor={selectedTheme.placeholderText}
                                                 style={[
                                                     styles.textInput,
@@ -639,7 +639,7 @@ export default function CreateNote({ navigation, route }) {
                             setShowDeleteModal={setShowDeleteModal}
                             currentTheme={currentTheme}
                             onDeleteInput={onDeleteInput}
-                            message={"Silmek istediğinden emin misin?"}
+                            message={"Are you sure?"}
                         ></DeleteModal>
 
                         {/* General Modal to show images and drawings at fullscreen */}

@@ -41,7 +41,7 @@ export default function PasswordModal({ visible, onClose, onConfirm, onSetPasswo
                     <>
                         <TextInput
                             style={styles.input}
-                            placeholder="Şifre"
+                            placeholder="Password"
                             placeholderTextColor="#aaa"
                             secureTextEntry
                             value={password}
@@ -54,17 +54,17 @@ export default function PasswordModal({ visible, onClose, onConfirm, onSetPasswo
                         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                         <TouchableOpacity style={[styles.button, styles.confirmButton]} onPress={handleConfirm}>
-                            <Text style={styles.buttonText}>Giriş Yap</Text>
+                            <Text style={styles.buttonText}>Log In</Text>
                         </TouchableOpacity>
                     </>
                 ) : (
                     <>
                         <TouchableOpacity style={[styles.button, styles.confirmButton]} onPress={handleQuickLogin}>
-                            <Text style={styles.buttonText}>Giriş Yap</Text>
+                            <Text style={styles.buttonText}>Log In</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleSetPassword}>
-                            <Text style={styles.buttonText}>Şifre Ayarla</Text>
+                            <Text style={styles.buttonText}>Set Password</Text>
                         </TouchableOpacity>
                     </>
                 )}

@@ -30,9 +30,9 @@ export default function SetPasswordModal({ visible, onClose, onSuccess }) {
         <Modal animationType="slide" transparent={true} visible={visible}>
             <View style={styles.overlay}>
                 <View style={styles.container}>
-                    <Text style={styles.title}>Şifre Belirle</Text>
+                    <Text style={styles.title}>Set New Password</Text>
                     <TextInput
-                        placeholder="Yeni Şifre"
+                        placeholder="Enter password"
                         placeholderTextColor="#aaa"
                         secureTextEntry
                         style={styles.input}
@@ -40,7 +40,7 @@ export default function SetPasswordModal({ visible, onClose, onSuccess }) {
                         onChangeText={setPassword}
                     />
                     <TextInput
-                        placeholder="Şifreyi Tekrarla"
+                        placeholder="Re-enter password"
                         placeholderTextColor="#aaa"
                         secureTextEntry
                         style={styles.input}
@@ -49,10 +49,10 @@ export default function SetPasswordModal({ visible, onClose, onSuccess }) {
                     />
                     {error ? <Text style={styles.error}>{error}</Text> : null}
                     <TouchableOpacity style={styles.button} onPress={handleSetPassword}>
-                        <Text style={styles.buttonText}>Şifreyi Kaydet</Text>
+                        <Text style={styles.buttonText}>Save Password</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                        <Text style={styles.cancelText}>Vazgeç</Text>
+                        <Text style={styles.cancelText}>Back</Text>
                     </TouchableOpacity>
                 </View>
             </View>

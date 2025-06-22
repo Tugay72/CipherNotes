@@ -16,7 +16,7 @@ export default function PasswordModal({
             setInputPassword('');
             onUnlock();
         } else {
-            Alert.alert('Hatalı Şifre', 'Lütfen doğru şifreyi giriniz.');
+            Alert.alert('Uncorrect password', 'Please enter the correct password.');
         }
     };
 
@@ -29,7 +29,7 @@ export default function PasswordModal({
         >
             <View style={styles.overlay}>
                 <View style={styles.container}>
-                    <Text style={styles.title}>Notu Görmek İçin Şifre Girin</Text>
+                    <Text style={styles.title}>Enter password to see the note!</Text>
 
                     <TextInput
                         value={inputPassword}
@@ -49,14 +49,14 @@ export default function PasswordModal({
                                 onClose();
                             }}
                         >
-                            <Text style={styles.cancelText}>İptal</Text>
+                            <Text style={styles.cancelText}>Delete</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={styles.enterButton}
                             onPress={handleUnlock}
                         >
-                            <Text style={styles.enterText}>Gir</Text>
+                            <Text style={styles.enterText}>Go</Text>
                         </TouchableOpacity>
 
 

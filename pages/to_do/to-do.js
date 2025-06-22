@@ -126,8 +126,8 @@ const ToDoComponent = ({ navigation, route }) => {
     const editTask = (id) => {
         const taskToEdit = tasks.find(t => t.id === id);
         if (taskToEdit) {
-            setTask(taskToEdit.text);     // Input'a görev metnini yükle
-            setEditingTaskId(id);         // Düzenleme modunu aktif et
+            setTask(taskToEdit.text);
+            setEditingTaskId(id);
         }
     };
 
@@ -157,7 +157,7 @@ const ToDoComponent = ({ navigation, route }) => {
             return {
                 icon: 'clipboard-text-outline',
                 bgColor: '#666',
-                message: 'Henüz görev yok',
+                message: ' No task available',
             };
         }
 
@@ -165,7 +165,7 @@ const ToDoComponent = ({ navigation, route }) => {
             return {
                 icon: 'check-circle-outline',
                 bgColor: '#4CAF50',
-                message: 'Tüm görevler tamamlandı!',
+                message: ' All tasks are completed!',
             };
         }
 
@@ -173,14 +173,14 @@ const ToDoComponent = ({ navigation, route }) => {
             return {
                 icon: 'alert-circle-outline',
                 bgColor: '#F44336',
-                message: 'Hiç görev tamamlanmamış!',
+                message: ' Hiç görev tamamlanmamış!',
             };
         }
 
         return {
             icon: 'progress-clock',
             bgColor: '#FF9800',
-            message: `${completedCount}/${totalCount} görev tamamlandı`,
+            message: ` ${completedCount}/${totalCount} of tasks are completed!`,
         };
     };
 
@@ -227,7 +227,7 @@ const ToDoComponent = ({ navigation, route }) => {
 
                     <View style={styles.titleContainer}>
                         <TextInput
-                            placeholder="Başlık"
+                            placeholder="Title"
                             placeholderTextColor={selectedTheme.placeholderText}
                             value={title}
                             maxLength={60}
@@ -256,7 +256,7 @@ const ToDoComponent = ({ navigation, route }) => {
                                     fontFamily: fontFamily
                                 }
                             ]}
-                            placeholder="Görev ekle"
+                            placeholder="Add new task"
                             placeholderTextColor={selectedTheme.placeholderText}
                             value={task}
                             onChangeText={setTask}

@@ -19,7 +19,7 @@ export default function DeleteModal({
         >
             <View style={styles.overlay}>
                 <View style={styles.content}>
-                    <Text style={styles.title}>Sil</Text>
+                    <Text style={styles.title}>Delete</Text>
                     <Text style={styles.message}>{message}</Text>
 
                     <View style={styles.buttons}>
@@ -27,7 +27,7 @@ export default function DeleteModal({
                             onPress={() => setShowDeleteModal(false)}
                             style={styles.cancelButton}
                         >
-                            <Text style={styles.cancelButtonText}>İptal</Text>
+                            <Text style={styles.cancelButtonText}>Back</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -37,7 +37,7 @@ export default function DeleteModal({
                             }}
                             style={styles.deleteButton}
                         >
-                            <Text style={styles.deleteButtonText}>Sil</Text>
+                            <Text style={styles.deleteButtonText}>Yes</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

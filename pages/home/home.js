@@ -360,7 +360,7 @@ export default function Home({ navigation, route }) {
                     onPress={() => navigation.navigate('Settings')}>
                     <Text
                         style={styles.menuItemText}
-                    >Ayarlar</Text>
+                    >Settings</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -426,7 +426,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="Not ara..."
+                                placeholder="Search Note..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}
@@ -463,6 +463,7 @@ export default function Home({ navigation, route }) {
                                 <NoteBox note={item} />
                             </TouchableOpacity>
                         )}
+
                         contentContainerStyle={styles.notes}
                         columnWrapperStyle={styles.columnWrapper}
                     />
@@ -497,7 +498,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="To-Do ara..."
+                                placeholder="Search To-Do..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}
@@ -565,7 +566,7 @@ export default function Home({ navigation, route }) {
                                     color: currentTheme.secondaryColor,
                                     flex: 1,
                                 }}
-                                placeholder="Hatırlatıcı ara..."
+                                placeholder="Search Reminder..."
                                 placeholderTextColor={currentTheme.secondaryColor}
                                 numberOfLines={1}
                                 value={searchText}
