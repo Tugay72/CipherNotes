@@ -408,7 +408,8 @@ export default function Home({ navigation, route }) {
             </View>
 
             {section === 'notes' ? (
-                <View>
+                <View style={{ flex: 1 }}>
+
                     <View
                         style={styles.topNavContainer}>
 
@@ -478,7 +479,7 @@ export default function Home({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
             ) : section === 'to-do' ? (
-                <View>
+                <View style={{ flex: 1 }}>
 
                     <View
                         style={styles.topNavContainer}>
@@ -547,7 +548,7 @@ export default function Home({ navigation, route }) {
                 </View>
 
             ) : section === 'reminder' ? (
-                <View>
+                <View style={{ flex: 1 }}>
 
                     <View style={styles.topNavContainer}>
 
@@ -660,17 +661,17 @@ const getStyles = (theme) => StyleSheet.create({
     notes: {
         paddingHorizontal: 16,
         marginTop: 12,
-        paddingBottom: 72,
+        paddingBottom: 32,
         gap: 16,
-        height: '80%'
+
     },
     columnWrapper: {
         justifyContent: 'space-between',
     },
     createNoteButton: {
+        position: 'absolute',
         width: 64,
         height: 64,
-        position: 'absolute',
         right: 16,
         bottom: 24,
         alignItems: 'center',

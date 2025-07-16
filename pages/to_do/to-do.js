@@ -173,7 +173,7 @@ const ToDoComponent = ({ navigation, route }) => {
             return {
                 icon: 'alert-circle-outline',
                 bgColor: '#F44336',
-                message: ' Hiç görev tamamlanmamış!',
+                message: 'No tasks completed!',
             };
         }
 

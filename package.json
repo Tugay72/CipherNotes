@@ -21,6 +21,7 @@
     "expo": "~52.0.46",
     "expo-av": "~15.0.2",
     "expo-camera": "~16.0.18",
+    "expo-crypto": "~14.0.2",
     "expo-file-system": "~18.0.12",
     "expo-image-picker": "~16.0.6",
     "expo-media-library": "~17.0.6",
@@ -28,6 +29,7 @@
     "expo-secure-store": "~14.0.1",
     "expo-sqlite": "~15.1.4",
     "expo-status-bar": "~2.0.1",
+    "expo-text-recognition": "^0.1.1",
     "react": "18.3.1",
     "react-native": "0.76.9",
     "react-native-audio-recorder-player": "^3.6.12",
@@ -48,8 +50,7 @@
     "react-native-webview": "^13.13.5",
     "react-native-zss-rich-text-editor": "^1.1.0",
     "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1",
-    "expo-crypto": "~14.0.2"
+    "tweetnacl-util": "^0.15.1"
   },
   "devDependencies": {
     "@react-native-community/cli": "latest"

@@ -79,14 +79,6 @@ export default function SettingsScreen({ navigation }) {
                     <Text style={styles.sectionTitle}>App Settings</Text>
 
                     <View style={styles.switchRow}>
-                        <Text style={styles.optionText}>Enable Notifications</Text>
-                        <Switch
-                            value={notificationsEnabled}
-                            onValueChange={toggleNotifications}
-                        />
-                    </View>
-
-                    <View style={styles.switchRow}>
                         <Text style={styles.optionText}>Dark Theme</Text>
                         <Switch
                             value={isDarkTheme}

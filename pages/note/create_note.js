@@ -10,6 +10,9 @@ import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import VoiceNote from '../../components/voice_note'
 
+import * as TextRecognition from 'expo-text-recognition';
+
+
 import themes from "../../theme";
 import StylingModal from "../../components/styling_modal";
 import DrawingCanvas from "../../components/drawing_canvas";
@@ -96,9 +99,8 @@ export default function CreateNote({ navigation, route }) {
         if (!isEqual) {
             setContentBlocks(mergedBlocks);
         }
+        console.log(contentBlocks)
     }, [contentBlocks]);
-
-
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', async () => {
@@ -147,15 +149,12 @@ export default function CreateNote({ navigation, route }) {
         setSelectedTheme(theme)
     };
 
-
-
     const onBottomNavPress = (onPressFunction) => {
         if (Keyboard.isVisible()) {
             return;
         }
         onPressFunction();
     };
-
 
     const onSaveInput = async () => {
         Keyboard.dismiss();
@@ -283,11 +282,43 @@ export default function CreateNote({ navigation, route }) {
         setContentBlocks(newBlocks);
     }
 
+    const runTextRecognition = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Permission to access camera roll is required!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets?.length > 0) {
+            const uri = result.assets[0].uri;
+
+            const recognized = await TextRecognition.recognizeTextAsync(uri);
+            const recognizedText = recognized.map(block => block.value).join('\n');
+
+            const newBlocks = [...contentBlocks];
+
+            // Ensure at least one text block exists
+            if (newBlocks.length === 0 || newBlocks[newBlocks.length - 1].type !== 'text') {
+                newBlocks.push({ type: 'text', content: '' });
+            }
+
+            // Add recognized text into a new block
+            newBlocks.push({ type: 'text', content: recognizedText });
+            setContentBlocks(newBlocks);
+        }
+    };
+
     const BNB_DATA = [
         { id: "1", icon: 'record-voice-over', onPress: () => setShowVoiceNote(true) },
         { id: "2", icon: 'image', onPress: addImage },
         { id: "3", icon: 'brush', onPress: () => setShowDrawingCanvas(true) },
-        { id: "4", icon: 'document-scanner', onPress: () => setShowDocumentReadingModal(true) },
+        { id: "4", icon: 'document-scanner', onPress: () => runTextRecognition },
     ];
 
     return (
@@ -356,7 +387,7 @@ export default function CreateNote({ navigation, route }) {
                         {/* Content */}
                         <View style={styles.content}>
                             <TextInput
-                                placeholder="Başlık"
+                                placeholder="Title"
                                 placeholderTextColor={selectedTheme.placeholderText}
                                 value={title}
                                 maxLength={60}
@@ -419,7 +450,7 @@ export default function CreateNote({ navigation, route }) {
                                                         style={styles.commonButton}
                                                     >
                                                         <Text style={styles.commonButtonText}>
-                                                            Görüntüle
+                                                            Fullscreen
                                                         </Text>
                                                     </TouchableOpacity>
 
@@ -501,7 +532,7 @@ export default function CreateNote({ navigation, route }) {
                                                         style={styles.commonButton}
                                                     >
                                                         <Text style={styles.commonButtonText}>
-                                                            Görüntüle
+                                                            Fullscreen
                                                         </Text>
                                                     </TouchableOpacity>
 
@@ -726,7 +757,6 @@ const getStyles = (theme) => StyleSheet.create({
         left: 0,
     },
     content: {
-        flex: 1,
         marginTop: 64,
         padding: 16,
         gap: 16
@@ -764,6 +794,7 @@ const getStyles = (theme) => StyleSheet.create({
 
     textInput: {
         width: '100%',
+        height: '100%',
         color: theme.secondaryColor,
         fontSize: 16,
         padding: 0,
